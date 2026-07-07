@@ -692,7 +692,8 @@ app.get('/api/seed', async (req, res) => {
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
-        regno: "HZN-ACA1"
+        regno: "HZN-ACA1",
+        age: 18
       }
     });
 
@@ -707,7 +708,8 @@ app.get('/api/seed', async (req, res) => {
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
-        regno: "HZN-ACA2"
+        regno: "HZN-ACA2",
+        age: 17
       }
     });
 
@@ -723,7 +725,8 @@ app.get('/api/seed', async (req, res) => {
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
-        regno: "HZN-SCH1"
+        regno: "HZN-SCH1",
+        age: 19
       }
     });
 
@@ -738,7 +741,8 @@ app.get('/api/seed', async (req, res) => {
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
-        regno: "HZN-SCH2"
+        regno: "HZN-SCH2",
+        age: 18
       }
     });
 
