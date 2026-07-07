@@ -36,7 +36,15 @@ export default function PlayerDashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const router = useRouter();
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToastMessage(message);
+    setToastType(type);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -106,11 +114,11 @@ export default function PlayerDashboard() {
         setPlayer(applicant);
         setIsEditing(false);
       } else {
-        alert("Failed to update profile.");
+        showToast("Failed to update profile.", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Error updating profile.");
+      showToast("Error updating profile.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -158,13 +166,13 @@ export default function PlayerDashboard() {
                 const { applicant } = await res.json();
                 setPlayer(applicant);
                 setCart({});
-                alert("Payment verified! Your dashboard has been updated and a notification was sent.");
+                showToast("Payment verified! Dashboard updated.", "success");
               } else {
-                alert("Payment successful but verification failed. Please contact admin.");
+                showToast("Payment verified but failed to update. Contact admin.", "error");
               }
             } catch (err) {
               console.error(err);
-              alert("Payment verification error.");
+              showToast("Payment verification error.", "error");
             }
           }
         },
@@ -949,6 +957,18 @@ export default function PlayerDashboard() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed bottom-8 right-8 z-[300] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl animate-[translateY_0.3s_ease-out] border ${toastType === 'success' ? 'bg-[#1a2e1a] border-[#25D366]/30 text-[#25D366]' : 'bg-[#2e1a1a] border-red-500/30 text-red-500'}`}>
+          {toastType === 'success' ? (
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          ) : (
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          )}
+          <span className="font-bold tracking-widest uppercase text-sm">{toastMessage}</span>
         </div>
       )}
 
