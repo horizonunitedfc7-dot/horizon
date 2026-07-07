@@ -132,7 +132,7 @@ export default function AdminFees() {
           ) : feeList.map((fee) => (
             <div key={fee.id} className="grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-brand-white/5 transition-colors">
               <div className="col-span-5 font-medium text-white">{fee.title}</div>
-              <div className="col-span-4 text-right font-mono text-gray-300 tracking-tight">â‚¦{fee.amount.toLocaleString()}</div>
+              <div className="col-span-4 text-right font-mono text-gray-300 tracking-tight">&#8358;{fee.amount.toLocaleString()}</div>
               <div className="col-span-3 flex justify-end gap-3">
                 <button onClick={() => openModal(fee)} className="text-brand-gold hover:text-white transition-colors text-sm font-bold uppercase tracking-widest">Edit</button>
                 <button onClick={() => handleDelete(fee.id)} className="text-red-400 hover:text-red-300 transition-colors text-sm font-bold uppercase tracking-widest">Delete</button>

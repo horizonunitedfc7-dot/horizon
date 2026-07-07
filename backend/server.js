@@ -720,13 +720,16 @@ app.get('/api/seed', async (req, res) => {
 
     await prisma.applicant.create({
       data: {
-        firstname: "Academic",
-        lastname: "One",
+        firstname: "Tunde",
+        lastname: "Bakare",
         email: "academic1@example.com",
         mobile: "08011111111",
         gender: "M",
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
+        paymentStatus: "COMPLETED",
+        paymentRef: "FLW_SEED_1001",
+        passportPhoto: "https://ui-avatars.com/api/?name=Tunde+Bakare&background=0D8ABC&color=fff&size=200",
         password: hashedPassword,
         regno: "HZN-ACA1",
         age: 18,
@@ -736,13 +739,16 @@ app.get('/api/seed', async (req, res) => {
 
     await prisma.applicant.create({
       data: {
-        firstname: "Academic",
-        lastname: "Two",
+        firstname: "Chuka",
+        lastname: "Obi",
         email: "academic2@example.com",
         mobile: "08022222222",
         gender: "M",
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
+        paymentStatus: "COMPLETED",
+        paymentRef: "FLW_SEED_1002",
+        passportPhoto: "https://ui-avatars.com/api/?name=Chuka+Obi&background=1E3A8A&color=fff&size=200",
         password: hashedPassword,
         regno: "HZN-ACA2",
         age: 17,
@@ -753,13 +759,16 @@ app.get('/api/seed', async (req, res) => {
     // 3. Seed 2 Scholarship Players
     await prisma.applicant.create({
       data: {
-        firstname: "Scholar",
-        lastname: "One",
+        firstname: "Ibrahim",
+        lastname: "Musa",
         email: "scholar1@example.com",
         mobile: "08033333333",
         gender: "M",
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
+        paymentStatus: "COMPLETED",
+        paymentRef: "FLW_SEED_1003",
+        passportPhoto: "https://ui-avatars.com/api/?name=Ibrahim+Musa&background=F59E0B&color=fff&size=200",
         password: hashedPassword,
         regno: "HZN-SCH1",
         age: 19,
@@ -769,13 +778,16 @@ app.get('/api/seed', async (req, res) => {
 
     await prisma.applicant.create({
       data: {
-        firstname: "Scholar",
-        lastname: "Two",
+        firstname: "Emeka",
+        lastname: "Eze",
         email: "scholar2@example.com",
         mobile: "08044444444",
         gender: "M",
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
+        paymentStatus: "COMPLETED",
+        paymentRef: "FLW_SEED_1004",
+        passportPhoto: "https://ui-avatars.com/api/?name=Emeka+Eze&background=10B981&color=fff&size=200",
         password: hashedPassword,
         regno: "HZN-SCH2",
         age: 18,

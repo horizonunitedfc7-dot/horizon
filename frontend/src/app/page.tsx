@@ -405,7 +405,7 @@ export default function LandingPage() {
               
               <div className="p-8 md:p-10 flex flex-col flex-1 relative z-20">
                 <h3 className="font-oswald text-4xl font-bold uppercase text-brand-white mb-2">Academic Player</h3>
-                <p className="text-brand-gold font-medium text-sm tracking-wide uppercase mb-8">Development & Education {registrationFee ? `(Reg Fee: â‚¦${registrationFee.toLocaleString()})` : ""}</p>
+                <p className="text-brand-gold font-medium text-sm tracking-wide uppercase mb-8">Development & Education {registrationFee ? `(Reg Fee: \u20A6${registrationFee.toLocaleString()})` : ""}</p>
                 
                 <ul className="space-y-4 mb-12 flex-1">
                   {[
@@ -441,7 +441,7 @@ export default function LandingPage() {
               
               <div className="p-8 md:p-10 flex flex-col flex-1 relative z-20">
                 <h3 className="font-oswald text-4xl font-bold uppercase text-brand-white mb-2">Scholarship Player</h3>
-                <p className="text-brand-white/80 font-medium text-sm tracking-wide uppercase mb-8">Professional Trial Callup {registrationFee?.toLocaleString() ? `(Reg Fee: â‚¦${registrationFee.toLocaleString()})` : ""}</p>
+                <p className="text-brand-white/80 font-medium text-sm tracking-wide uppercase mb-8">Professional Trial Callup {registrationFee?.toLocaleString() ? `(Reg Fee: \u20A6${registrationFee.toLocaleString()})` : ""}</p>
                 
                 <ul className="space-y-4 mb-12 flex-1">
                   {[

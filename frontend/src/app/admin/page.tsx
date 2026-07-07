@@ -419,7 +419,7 @@ export default function AdminDashboard() {
             { label: "Total Recruits", value: analytics.total, color: "text-white" },
             { label: "Pending Scrutiny", value: analytics.pending, color: "text-yellow-500" },
             { label: "Contract Offered", value: analytics.approved, color: "text-brand-gold" },
-            { label: "Revenue (NGN)", value: `â‚¦${analytics.revenue.toLocaleString()}`, color: "text-white" }
+            { label: "Revenue (NGN)", value: `\u20A6${analytics.revenue.toLocaleString()}`, color: "text-white" }
           ].map((stat, i) => (
             <div key={i} className="flex-1 min-w-[200px] p-1 rounded-[1.5rem] bg-gradient-to-b from-white/10 to-transparent border border-brand-white/10 relative overflow-hidden group">
               <div className="absolute inset-0 bg-[url('/hero_action_bg.png')] bg-cover opacity-10 group-hover:opacity-20 transition-opacity" />

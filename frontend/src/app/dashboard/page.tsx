@@ -689,7 +689,7 @@ export default function PlayerDashboard() {
                     </div>
                     <div className="p-6 flex flex-col flex-1">
                       <h3 className="text-lg font-bold text-white mb-2">{fee.title}</h3>
-                      <div className="text-xl font-mono text-brand-gold mb-6 tracking-tight">â‚¦{fee.amount.toLocaleString()}</div>
+                      <div className="text-xl font-mono text-brand-gold mb-6 tracking-tight">&#8358;{fee.amount.toLocaleString()}</div>
                       
                       <div className="mt-auto">
                         {ledger[fee.key] ? (
@@ -724,7 +724,7 @@ export default function PlayerDashboard() {
                 <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-brand-gold text-black p-4 rounded-2xl shadow-[0_20px_50px_rgba(255,215,0,0.2)] flex items-center justify-between z-50 animate-[translateY_0.3s_ease-out]">
                   <div>
                     <div className="text-xs font-bold uppercase tracking-widest opacity-70">Total Due</div>
-                    <div className="text-2xl font-black font-oswald">â‚¦{cartTotal.toLocaleString()}</div>
+                    <div className="text-2xl font-black font-oswald">&#8358;{cartTotal.toLocaleString()}</div>
                   </div>
                   <button 
                     onClick={handleCartCheckout}
