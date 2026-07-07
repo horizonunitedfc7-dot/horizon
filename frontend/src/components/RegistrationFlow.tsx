@@ -5,7 +5,7 @@ import Script from "next/script";
 import Link from "next/link";
 import { Country, State } from 'country-state-city';
 import Select from 'react-select';
-import { X, Check, ArrowLeft, Upload } from "lucide-react";
+import { X, Check, ArrowLeft, Upload, Eye, EyeOff } from "lucide-react";
 import { gsap } from "gsap";
 
 // High-End Select Styling
@@ -56,6 +56,9 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const formRef = useRef<HTMLFormElement>(null);
   const filterRef = useRef<any>(null);
   const [registrationFee, setRegistrationFee] = useState(15000);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [flwKey, setFlwKey] = useState("");
 
   useEffect(() => {
     fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees")
@@ -63,6 +66,13 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
       .then(data => {
         const regFee = data.find((f: any) => f.key === 'registration' || f.category === 'REGISTRATION');
         if (regFee) setRegistrationFee(regFee.amount);
+      })
+      .catch(console.error);
+
+    fetch("https://horizon-backend-production-4f7a.up.railway.app/api/config/flutterwave")
+      .then(res => res.json())
+      .then(data => {
+        if (data.publicKey) setFlwKey(data.publicKey);
       })
       .catch(console.error);
   }, []);
@@ -92,8 +102,9 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const countries = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
   const states = selectedCountryCode ? State.getStatesOfCountry(selectedCountryCode).map(s => ({ value: s.name, label: s.name })) : [];
 
-  const handleNext = (e: React.MouseEvent) => {
+  const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (isCheckingEmail) return;
     setError("");
 
     if (formRef.current) {
@@ -106,12 +117,73 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
           setIsRejected(true);
           return;
         }
-        if (!data.firstname || !data.lastname || !data.email || !data.password) {
-          setError("Please fill all fields.");
+        if (!data.firstname || !data.lastname || !data.email || !data.password || !data.passportPhoto) {
+          setError("Please fill all required fields in this step.");
           return;
         }
+        if ((data.password as string).length < 6) {
+          setError("Password must be at least 6 characters long.");
+          return;
+        }
+
+        setIsCheckingEmail(true);
+        try {
+          const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/check-email?email=${encodeURIComponent(data.email as string)}`);
+          if (res.ok) {
+            const result = await res.json();
+            if (result.exists) {
+              setError("Email is already registered. Please log in instead.");
+              setIsCheckingEmail(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Error checking email", err);
+        }
+        setIsCheckingEmail(false);
       } 
-      // Other validation can be added here
+      if (currentStep === 2) {
+        if (!data.age || !data.nationality || !data.state || !data.address || !data.mobile || !data.gender) {
+          setError("Please fill all demographics fields.");
+          return;
+        }
+        const age = parseInt(data.age as string);
+        if (isNaN(age)) {
+          setError("Please enter a valid age.");
+          return;
+        }
+        if (playerType === 'ACADEMIC' && (age < 7 || age > 35)) {
+          setError("Academic players must be between 7 and 35 years old.");
+          return;
+        }
+        if (playerType === 'SCHOLARSHIP' && (age < 10 || age > 35)) {
+          setError("Scholarship players must be between 10 and 35 years old.");
+          return;
+        }
+      }
+      if (currentStep === 3) {
+        if (!data.position || !data.foot || !data.height || !data.weight || !data.experience) {
+           setError("Please fill all football profile fields.");
+           return;
+        }
+        const exp = parseInt(data.experience as string);
+        if (isNaN(exp) || exp < 0) {
+           setError("Experience must be a valid number of years.");
+           return;
+        }
+      }
+      if (currentStep === 4) {
+        if (!data.bloodgroup || !data.genotype || !data.emergencynumber) {
+           setError("Please fill all medical information fields.");
+           return;
+        }
+      }
+      if (currentStep === 5) {
+        if (!data.institute || !data.classlevel || !data.guardianname || !data.relationship || !data.guardianmobile || !data.guardianaddress) {
+           setError("Please fill all education and guardian fields.");
+           return;
+        }
+      }
     }
 
     if (currentStep < totalSteps) setCurrentStep(currentStep + 1);
@@ -134,7 +206,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
     if (typeof window !== "undefined" && window.FlutterwaveCheckout) {
       // @ts-ignore
       window.FlutterwaveCheckout({
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
+        public_key: flwKey || process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
         tx_ref: Date.now().toString(),
         amount: registrationFee, 
         currency: "NGN",
@@ -333,9 +405,14 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                   <label className="block text-sm text-gray-400 mb-2">Email Address</label>
                   <input name="email" type="email" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors" />
                 </div>
-                <div className="md:col-span-2">
+                <div className="md:col-span-2 relative">
                   <label className="block text-sm text-gray-400 mb-2">Dashboard Password (For future logins)</label>
-                  <input name="password" type="password" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors" />
+                  <div className="relative">
+                    <input name="password" type={showPassword ? "text" : "password"} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white focus:border-white/30 focus:outline-none transition-colors" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -346,7 +423,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Age</label>
-                  <input name="age" type="number" min="10" max="35" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+                  <input name="age" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Gender</label>
@@ -415,7 +492,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Years of Experience</label>
-                  <input name="experience" type="number" min="0" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
+                  <input name="experience" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
                 </div>
               </div>
             </div>
@@ -501,14 +578,14 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
 
               {currentStep < totalSteps ? (
                 <button type="button" onClick={handleNext} className="group relative flex items-center gap-4 bg-brand-white text-brand-black px-8 py-3 rounded-full font-semibold overflow-hidden transition-transform active:scale-[0.98]">
-                  <span className="relative z-10">Next Step</span>
+                  <span className="relative z-10">{isCheckingEmail ? "Checking..." : "Next Step"}</span>
                   <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center relative z-10 group-hover:translate-x-1 transition-transform">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </div>
                 </button>
               ) : (
                 <button type="submit" disabled={isProcessing} className="group relative flex items-center gap-4 bg-brand-gold text-brand-black px-8 py-3 rounded-full font-semibold overflow-hidden transition-transform active:scale-[0.98]">
-                  <span className="relative z-10">{isProcessing ? "Processing..." : "Pay 15,000 NGN to Submit"}</span>
+                  <span className="relative z-10">{isProcessing ? "Processing..." : `Pay \u20A6${registrationFee.toLocaleString()} to Submit`}</span>
                   <div className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center relative z-10 group-hover:translate-x-1 transition-transform">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   </div>

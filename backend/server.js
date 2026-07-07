@@ -70,6 +70,26 @@ app.post('/api/auth/unified/login', async (req, res) => {
   }
 });
 
+// Get Flutterwave Public Key Config
+app.get('/api/config/flutterwave', (req, res) => {
+  // We only return the PUBLIC key which is safe for frontend browsers
+  res.json({ publicKey: process.env.FLW_PUBLIC_KEY });
+});
+
+// Check Email Uniqueness during Registration
+app.get('/api/check-email', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: "Email is required" });
+  try {
+    const applicant = await prisma.applicant.findFirst({
+      where: { email: email.toLowerCase() }
+    });
+    return res.json({ exists: !!applicant });
+  } catch (err) {
+    res.status(500).json({ error: "Server error occurred" });
+  }
+});
+
 // Player Forgot Password
 app.post('/api/auth/forgot-password', async (req, res) => {
   const { identifier } = req.body;
