@@ -33,6 +33,13 @@
     --foreground: 0 0% 100%;
   }
 
+  /* Scale the entire app proportionally to a 1920px width on desktop */
+  @media (min-width: 1024px) {
+    html {
+      font-size: calc(100vw / 1920 * 16);
+    }
+  }
+
   body {
     background-color: var(--color-dark-bg);
     color: var(--foreground);
