@@ -84,7 +84,10 @@ app.get('/api/check-email', async (req, res) => {
     const applicant = await prisma.applicant.findFirst({
       where: { email: email.toLowerCase() }
     });
-    return res.json({ exists: !!applicant });
+    const admin = await prisma.admin.findFirst({
+      where: { email: email.toLowerCase() }
+    });
+    return res.json({ exists: !!applicant || !!admin });
   } catch (err) {
     res.status(500).json({ error: "Server error occurred" });
   }
