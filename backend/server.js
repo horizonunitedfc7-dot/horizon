@@ -621,6 +621,133 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
+// TEMPORARY ROUTE: Seed Production Database
+app.get('/api/seed', async (req, res) => {
+  try {
+    // 1. Seed 5 Events
+    const events = [
+      {
+        title: "Pre-Season Friendly",
+        description: "Watch Horizon United vs Lagos City FC.",
+        location: "Horizon Stadium",
+        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        teamA: "Horizon United",
+        teamB: "Lagos City FC",
+        isPoster: true
+      },
+      {
+        title: "Open Trial Day",
+        description: "Open trial assessments.",
+        location: "Training Pitch",
+        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        teamA: "",
+        teamB: "",
+        isPoster: false
+      },
+      {
+        title: "Academy Cup Final",
+        description: "U-19s cup final.",
+        location: "National Stadium",
+        date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        teamA: "Horizon Academy",
+        teamB: "Enyimba Youth",
+        isPoster: true
+      },
+      {
+        title: "Community Outreach",
+        description: "Giving back to the local community.",
+        location: "Surulere Square",
+        date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+        teamA: "",
+        teamB: "",
+        isPoster: false
+      },
+      {
+        title: "End of Season Gala",
+        description: "Awards night and dinner.",
+        location: "Eko Hotel",
+        date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        teamA: "",
+        teamB: "",
+        isPoster: false
+      }
+    ];
+
+    for (const ev of events) {
+      await prisma.event.create({ data: ev });
+    }
+
+    // 2. Seed 2 Academic Players
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash("password123", 10);
+    
+    await prisma.applicant.create({
+      data: {
+        firstname: "Academic",
+        lastname: "One",
+        email: "academic1@example.com",
+        mobile: "08011111111",
+        dob: "2005-01-01",
+        gender: "M",
+        playerType: "ACADEMIC",
+        applicationStatus: "ACCEPTED",
+        password: hashedPassword,
+        regno: "HZN-ACA1"
+      }
+    });
+
+    await prisma.applicant.create({
+      data: {
+        firstname: "Academic",
+        lastname: "Two",
+        email: "academic2@example.com",
+        mobile: "08022222222",
+        dob: "2006-02-02",
+        gender: "M",
+        playerType: "ACADEMIC",
+        applicationStatus: "ACCEPTED",
+        password: hashedPassword,
+        regno: "HZN-ACA2"
+      }
+    });
+
+    // 3. Seed 2 Scholarship Players
+    await prisma.applicant.create({
+      data: {
+        firstname: "Scholar",
+        lastname: "One",
+        email: "scholar1@example.com",
+        mobile: "08033333333",
+        dob: "2005-03-03",
+        gender: "M",
+        playerType: "SCHOLARSHIP",
+        applicationStatus: "ACCEPTED",
+        password: hashedPassword,
+        regno: "HZN-SCH1"
+      }
+    });
+
+    await prisma.applicant.create({
+      data: {
+        firstname: "Scholar",
+        lastname: "Two",
+        email: "scholar2@example.com",
+        mobile: "08044444444",
+        dob: "2006-04-04",
+        gender: "M",
+        playerType: "SCHOLARSHIP",
+        applicationStatus: "ACCEPTED",
+        password: hashedPassword,
+        regno: "HZN-SCH2"
+      }
+    });
+
+    res.json({ message: "Successfully seeded 5 events, 2 academic players, and 2 scholarship players!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/admin/events', requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const { title, date, description, location, teamA, teamB, isPoster, ticketLink } = req.body;

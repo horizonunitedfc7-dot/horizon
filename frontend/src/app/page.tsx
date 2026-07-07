@@ -80,7 +80,7 @@ export default function LandingPage() {
         const data = await res.json();
         setEvents(data);
       } catch (err) {
-        console.error("Failed to fetch events", err);
+        console.error(err);
       }
     };
 
@@ -103,6 +103,35 @@ export default function LandingPage() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSyncCalendar = () => {
+    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Horizon United FC//EN\n";
+    events.forEach(evt => {
+      const startDate = new Date(evt.date);
+      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+      
+      const formatICSDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      icsContent += "BEGIN:VEVENT\n";
+      icsContent += `DTSTART:${formatICSDate(startDate)}\n`;
+      icsContent += `DTEND:${formatICSDate(endDate)}\n`;
+      icsContent += `SUMMARY:${evt.title}\n`;
+      icsContent += `DESCRIPTION:${evt.description}\n`;
+      if (evt.location) icsContent += `LOCATION:${evt.location}\n`;
+      icsContent += "END:VEVENT\n";
+    });
+    icsContent += "END:VCALENDAR";
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', 'horizon-events.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const scrollToPaths = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -454,7 +483,7 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-brand-black font-bold text-sm uppercase tracking-widest rounded-full transition-colors whitespace-nowrap">
+            <button onClick={handleSyncCalendar} className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-brand-black font-bold text-sm uppercase tracking-widest rounded-full transition-colors whitespace-nowrap">
               Sync Calendar <CalendarPlus className="w-5 h-5" />
             </button>
           </div>
