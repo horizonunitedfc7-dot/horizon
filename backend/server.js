@@ -48,13 +48,10 @@ app.post('/api/auth/unified/login', async (req, res) => {
       }
     } 
     
-    // If not an admin (or not an email), check if it's a Player (Registration ID or Email)
+    // If not an admin (or not an email), check if it's a Player (Registration ID only)
     const applicant = await prisma.applicant.findFirst({
       where: {
-        OR: [
-          { regno: identifier },
-          { email: identifier }
-        ]
+        regno: identifier
       }
     });
 
@@ -78,10 +75,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const applicant = await prisma.applicant.findFirst({
       where: {
-        OR: [
-          { email: identifier },
-          { regno: identifier }
-        ]
+        regno: identifier
       }
     });
 
