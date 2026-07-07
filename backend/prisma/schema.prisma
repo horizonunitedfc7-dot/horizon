@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Applicant {
+  id              String   @id @default(uuid())
+  firstname       String
+  lastname        String
+  regno           String   @unique
+  age             Int
+  nationality     String
+  state           String
+  address         String
+  mobile          String
+  email           String   @unique
+  gender          String
+  message         String?
+
+  position        String
+  foot            String
+  height          String
+  weight          String
+  prevclub        String?
+  experience      Int
+  achievement     String?
+
+  bloodgroup      String
+  genotype        String
+  medicalcondition String?
+  allergy         String?
+  emergencynumber String
+
+  institute       String
+  classlevel      String
+
+  guardianname    String
+  relationship    String
+  guardianmobile  String
+  guardianaddress String
+
+  rulesAgreed     Boolean  @default(true)
+  disciplineAgreed Boolean @default(true)
+
+  paymentStatus   String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  paymentRef      String?
+  
+  applicationStatus String @default("PENDING") // PENDING, APPROVED, REJECTED, OFFICIAL_SQUAD, TRIAL_FAILED
+
+  playerType        String   @default("ACADEMIC") // ACADEMIC, SCHOLARSHIP
+  password          String?
+  passportPhoto     String?
+  releasedFromClub  Boolean  @default(false)
+  hasHealthIssues   Boolean  @default(false)
+  parentConsent     Boolean  @default(false)
+  consentLetter     String?
+  clubReleaseLetter String?
+  feeLedger         String?  // JSON string for fees
+
+  scoutRatings      String?  // JSON string
+  privateSchedule   String?  // JSON string
+  coachNotes        String?
+
+  messages          Message[]
+
+  createdAt       DateTime @default(now())
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
+
+model Fee {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  title     String
+  amount    Int
+  category  String   @default("ACADEMIC")
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  applicantId     String
+  applicant       Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  subject         String
+  body            String
+  isRead          Boolean  @default(false)
+  sentViaWhatsApp Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  date        DateTime
+  description String
+  location    String
+  teamA       String?
+  teamB       String?
+  isPoster    Boolean  @default(false)
+  image       String?
+  ticketLink  String?
+  createdAt   DateTime @default(now())
+}

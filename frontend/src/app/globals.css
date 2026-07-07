@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+.PhoneInput-custom {
+  background: transparent !important;
+}
+.PhoneInput-custom .PhoneInputInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #d1d5db;
+  padding-left: 0.5rem;
+}
+.PhoneInput-custom .PhoneInputCountrySelect {
+  background: #1e1e1e;
+  color: white;
+}
+
+@theme {
+  --color-brand-gold: #FFD700;
+  --color-brand-black: #000000;
+  --color-brand-white: #FEF5F5;
+  --color-dark-card: rgba(18, 18, 18, 0.65);
+  --font-oswald: var(--font-oswald);
+  
+  --animate-fade-in: fadeIn 0.6s cubic-bezier(0.39, 0.57, 0.04, 1) forwards;
+  --animate-slide-up: slideUp 0.5s ease-out forwards;
+  --animate-marquee: marquee 30s linear infinite;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 2%;
+    --foreground: 0 0% 100%;
+  }
+
+  body {
+    background-color: var(--color-dark-bg);
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background-color: var(--color-dark-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+.input-field {
+  width: 100%;
+  padding: 15px;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #FFD700;
+  background-color: #252525;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
+}
+
+/* Hide scrollbar for step transitions if needed */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
