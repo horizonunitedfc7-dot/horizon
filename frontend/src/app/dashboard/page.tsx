@@ -128,14 +128,14 @@ export default function PlayerDashboard() {
     if (typeof window !== "undefined" && window.FlutterwaveCheckout) {
       // @ts-ignore
       window.FlutterwaveCheckout({
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
+        public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
         tx_ref: `${player.regno}_cart_${Date.now()}`,
         amount: totalAmount, 
         currency: "NGN",
         payment_options: "card,mobilemoney,ussd",
         customer: {
-          email: "user@example.com", // from player.email
-          phone_number: "", // from player.mobile
+          email: player.email || "user@example.com",
+          phone_number: player.mobile || "",
           name: `${player.firstname} ${player.lastname}`,
         },
         customizations: {
@@ -147,19 +147,22 @@ export default function PlayerDashboard() {
           if (response.status === "successful" || response.status === "completed") {
             try {
               const token = localStorage.getItem("playerToken");
-              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/ledger", {
-                method: "PUT",
+              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/payments/verify", {
+                method: "POST",
                 headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ paidItems: cart })
+                body: JSON.stringify({ transaction_id: response.transaction_id, paidItems: cart })
               });
               if (res.ok) {
                 const { applicant } = await res.json();
                 setPlayer(applicant);
                 setCart({});
-                alert("Payment successful! Your dashboard has been updated.");
+                alert("Payment verified! Your dashboard has been updated and a notification was sent.");
+              } else {
+                alert("Payment successful but verification failed. Please contact admin.");
               }
             } catch (err) {
               console.error(err);
+              alert("Payment verification error.");
             }
           }
         },

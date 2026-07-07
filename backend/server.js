@@ -188,9 +188,29 @@ app.put('/api/player/me', requirePlayer, upload.fields([
   }
 });
 
-app.put('/api/player/ledger', requirePlayer, async (req, res) => {
+const axios = require('axios');
+
+// Helper function to verify Flutterwave payment
+const verifyFlutterwavePayment = async (transaction_id) => {
+  const secretKey = process.env.FLW_SECRET_KEY;
+  if (!secretKey) throw new Error("Flutterwave secret key not configured");
+  
+  const response = await axios.get(`https://api.flutterwave.com/v3/transactions/${transaction_id}/verify`, {
+    headers: { Authorization: `Bearer ${secretKey}` }
+  });
+  return response.data;
+};
+
+app.post('/api/payments/verify', requirePlayer, async (req, res) => {
   try {
-    const { paidItems } = req.body;
+    const { transaction_id, paidItems } = req.body;
+    
+    // Verify with Flutterwave
+    const flwRes = await verifyFlutterwavePayment(transaction_id);
+    if (flwRes.data.status !== "successful") {
+      return res.status(400).json({ error: "Payment verification failed" });
+    }
+
     const applicant = await prisma.applicant.findUnique({ where: { id: req.user.id } });
     if (!applicant) return res.status(404).json({ error: "Player not found" });
 
@@ -200,7 +220,6 @@ app.put('/api/player/ledger', requirePlayer, async (req, res) => {
     for (const [key, qty] of Object.entries(paidItems)) {
       if (qty > 0) {
         currentLedger[key] = true;
-        // if quantity matters (e.g. jersey), store it
         currentLedger[`${key}_qty`] = qty;
       }
     }
@@ -210,9 +229,41 @@ app.put('/api/player/ledger', requirePlayer, async (req, res) => {
       data: { feeLedger: JSON.stringify(currentLedger) }
     });
 
+    // Create Notification Message
+    await prisma.message.create({
+      data: {
+        applicantId: applicant.id,
+        subject: "Payment Successful",
+        body: `We have successfully received your payment (Ref: ${flwRes.data.tx_ref}). Your dashboard has been updated.`,
+        isRead: false
+      }
+    });
+
     res.json({ success: true, applicant: updatedApplicant });
   } catch (err) {
+    console.error("Payment Verification Error:", err.response?.data || err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/payments/webhook', async (req, res) => {
+  try {
+    const secretHash = process.env.FLW_SECRET_HASH;
+    const signature = req.headers['verif-hash'];
+    
+    if (!signature || signature !== secretHash) {
+      return res.status(401).end();
+    }
+
+    const payload = req.body;
+    if (payload.event === 'charge.completed' && payload.data.status === 'successful') {
+      console.log("Webhook verified for transaction:", payload.data.id);
+    }
+    
+    res.status(200).end();
+  } catch (err) {
+    console.error("Webhook Error:", err.message);
+    res.status(500).end();
   }
 });
 
