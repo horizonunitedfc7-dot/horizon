@@ -24,7 +24,7 @@ export default function AdminSettings() {
     const token = localStorage.getItem("adminToken");
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/password", {
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/password", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

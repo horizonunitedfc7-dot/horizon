@@ -19,7 +19,7 @@ export default function EventsPage() {
 
     const fetchEvents = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/events');
+        const res = await fetch('https://horizon-backend-production-4f7a.up.railway.app/api/events');
         const data = await res.json();
         setEvents(data);
       } catch (err) {

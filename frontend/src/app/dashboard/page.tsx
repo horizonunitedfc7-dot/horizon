@@ -46,9 +46,9 @@ export default function PlayerDashboard() {
 
       try {
         const [playerRes, feesRes, msgsRes] = await Promise.all([
-          fetch("http://localhost:5000/api/player/me", { headers: { "Authorization": `Bearer ${token}` } }),
-          fetch("http://localhost:5000/api/fees"),
-          fetch("http://localhost:5000/api/player/messages", { headers: { "Authorization": `Bearer ${token}` } })
+          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/me", { headers: { "Authorization": `Bearer ${token}` } }),
+          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees"),
+          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/messages", { headers: { "Authorization": `Bearer ${token}` } })
         ]);
 
         if (!playerRes.ok) {
@@ -76,7 +76,7 @@ export default function PlayerDashboard() {
   const markMessageAsRead = async (id: string) => {
     const token = localStorage.getItem("playerToken");
     try {
-      await fetch(`http://localhost:5000/api/player/messages/${id}/read`, {
+      await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/player/messages/${id}/read`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -93,7 +93,7 @@ export default function PlayerDashboard() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch("http://localhost:5000/api/player/me", {
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/me", {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData,
@@ -147,7 +147,7 @@ export default function PlayerDashboard() {
           if (response.status === "successful" || response.status === "completed") {
             try {
               const token = localStorage.getItem("playerToken");
-              const res = await fetch("http://localhost:5000/api/player/ledger", {
+              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/ledger", {
                 method: "PUT",
                 headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ paidItems: cart })
@@ -227,7 +227,7 @@ export default function PlayerDashboard() {
               
               <div className="w-32 h-32 rounded-full border-4 border-brand-gold p-1 mb-6 relative z-10 bg-black">
                 {player.passportPhoto ? (
-                  <img src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `http://localhost:5000${player.passportPhoto}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  <img src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${player.passportPhoto}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <div className="w-full h-full rounded-full bg-brand-white/5 flex items-center justify-center text-gray-400 font-oswald text-4xl">
                     {player.firstname[0]}{player.lastname[0]}
@@ -303,7 +303,7 @@ export default function PlayerDashboard() {
                         <div className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-1">{event.date}</div>
                         <div className="font-bold text-white mb-1">{event.title}</div>
                         <div className="text-sm text-gray-400 flex items-center gap-2">
-                          📍 {event.location}
+                          ðŸ“ {event.location}
                         </div>
                       </div>
                       <div className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-brand-gold/20">
@@ -543,7 +543,7 @@ export default function PlayerDashboard() {
                 <div className="w-48 h-48 md:w-64 md:h-64 mt-16 md:mt-24 mb-8 relative flex items-end justify-center overflow-hidden">
                   {player.passportPhoto ? (
                     <img 
-                      src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `http://localhost:5000${player.passportPhoto.startsWith('/') ? '' : '/'}${player.passportPhoto}`} 
+                      src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${player.passportPhoto.startsWith('/') ? '' : '/'}${player.passportPhoto}`} 
                       alt="Passport" 
                       className="w-full h-full object-cover object-top drop-shadow-2xl grayscale hover:grayscale-0 transition-all duration-500" 
                       style={{ WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%)' }} 
@@ -684,7 +684,7 @@ export default function PlayerDashboard() {
                     </div>
                     <div className="p-6 flex flex-col flex-1">
                       <h3 className="text-lg font-bold text-white mb-2">{fee.title}</h3>
-                      <div className="text-xl font-mono text-brand-gold mb-6 tracking-tight">₦{fee.amount.toLocaleString()}</div>
+                      <div className="text-xl font-mono text-brand-gold mb-6 tracking-tight">â‚¦{fee.amount.toLocaleString()}</div>
                       
                       <div className="mt-auto">
                         {ledger[fee.key] ? (
@@ -719,7 +719,7 @@ export default function PlayerDashboard() {
                 <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-brand-gold text-black p-4 rounded-2xl shadow-[0_20px_50px_rgba(255,215,0,0.2)] flex items-center justify-between z-50 animate-[translateY_0.3s_ease-out]">
                   <div>
                     <div className="text-xs font-bold uppercase tracking-widest opacity-70">Total Due</div>
-                    <div className="text-2xl font-black font-oswald">₦{cartTotal.toLocaleString()}</div>
+                    <div className="text-2xl font-black font-oswald">â‚¦{cartTotal.toLocaleString()}</div>
                   </div>
                   <button 
                     onClick={handleCartCheckout}

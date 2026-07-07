@@ -88,7 +88,7 @@ export default function AdminDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/applicants", {
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     setMsgLoading(true);
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch("http://localhost:5000/api/admin/messages", {
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
   const handleStatusChange = async (id: string, status: string, reason?: string) => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/applicants/${id}/status`, {
+      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${id}/status`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/applicants/${selectedApplicant.id}/squad-data`, {
+      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${selectedApplicant.id}/squad-data`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
 
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/applicants/${id}`, {
+      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -313,7 +313,7 @@ export default function AdminDashboard() {
                 <div className="relative w-full aspect-[4/3] bg-gradient-to-t from-brand-black/50 to-transparent flex items-end justify-center pt-8 overflow-hidden">
                   {app.passportPhoto ? (
                     <img 
-                      src={app.passportPhoto.startsWith('http') ? app.passportPhoto : `http://localhost:5000${app.passportPhoto.startsWith('/') ? '' : '/'}${app.passportPhoto}`} 
+                      src={app.passportPhoto.startsWith('http') ? app.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${app.passportPhoto.startsWith('/') ? '' : '/'}${app.passportPhoto}`} 
                       alt={app.firstname} 
                       className="h-full w-auto object-cover object-top drop-shadow-2xl grayscale group-hover:grayscale-0 transition-all duration-500" 
                       style={{ WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%)' }} 
@@ -419,7 +419,7 @@ export default function AdminDashboard() {
             { label: "Total Recruits", value: analytics.total, color: "text-white" },
             { label: "Pending Scrutiny", value: analytics.pending, color: "text-yellow-500" },
             { label: "Contract Offered", value: analytics.approved, color: "text-brand-gold" },
-            { label: "Revenue (NGN)", value: `₦${analytics.revenue.toLocaleString()}`, color: "text-white" }
+            { label: "Revenue (NGN)", value: `â‚¦${analytics.revenue.toLocaleString()}`, color: "text-white" }
           ].map((stat, i) => (
             <div key={i} className="flex-1 min-w-[200px] p-1 rounded-[1.5rem] bg-gradient-to-b from-white/10 to-transparent border border-brand-white/10 relative overflow-hidden group">
               <div className="absolute inset-0 bg-[url('/hero_action_bg.png')] bg-cover opacity-10 group-hover:opacity-20 transition-opacity" />
@@ -446,7 +446,7 @@ export default function AdminDashboard() {
             <div className="sticky top-0 bg-brand-black/90 backdrop-blur-xl border-b border-brand-white/10 px-8 py-6 flex items-center justify-between z-10">
               <div className="flex items-center gap-6">
                 {selectedApplicant.passportPhoto ? (
-                  <img src={selectedApplicant.passportPhoto.startsWith('http') ? selectedApplicant.passportPhoto : `http://localhost:5000${selectedApplicant.passportPhoto.startsWith('/') ? '' : '/'}${selectedApplicant.passportPhoto}`} alt="Passport" className="w-16 h-16 rounded-full object-cover border border-white/20" />
+                  <img src={selectedApplicant.passportPhoto.startsWith('http') ? selectedApplicant.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.passportPhoto.startsWith('/') ? '' : '/'}${selectedApplicant.passportPhoto}`} alt="Passport" className="w-16 h-16 rounded-full object-cover border border-white/20" />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-white/5 border border-brand-white/10 flex items-center justify-center">
                     <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -509,7 +509,7 @@ export default function AdminDashboard() {
                           {selectedApplicant.releasedFromClub ? "Yes" : "No"}
                         </span>
                         {selectedApplicant.clubReleaseLetter && (
-                          <a href={`http://localhost:5000${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                          <a href={`https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                             View
                           </a>
                         )}
@@ -523,7 +523,7 @@ export default function AdminDashboard() {
                         {selectedApplicant.parentConsent ? "Yes" : "No"}
                       </span>
                       {selectedApplicant.consentLetter && (
-                        <a href={`http://localhost:5000${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                        <a href={`https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                           View
                         </a>
                       )}
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
                                 <span className="text-white">{item.title}</span>
                               </div>
                               <button onClick={() => setPrivateSchedule(privateSchedule.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-300">
-                                ✕
+                                âœ•
                               </button>
                             </div>
                           ))}

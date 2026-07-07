@@ -53,7 +53,7 @@ export default function AdminEventsPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/events");
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/events");
       const data = await res.json();
       setEvents(data);
     } catch (err) {
@@ -108,8 +108,8 @@ export default function AdminEventsPage() {
     const token = localStorage.getItem("adminToken");
     
     const url = editingId 
-      ? `http://localhost:5000/api/admin/events/${editingId}`
-      : `http://localhost:5000/api/admin/events`;
+      ? `https://horizon-backend-production-4f7a.up.railway.app/api/admin/events/${editingId}`
+      : `https://horizon-backend-production-4f7a.up.railway.app/api/admin/events`;
       
     const method = editingId ? "PUT" : "POST";
 
@@ -152,7 +152,7 @@ export default function AdminEventsPage() {
     if (!confirm("Are you sure you want to delete this event?")) return;
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/events/${id}`, {
+      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/events/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -228,7 +228,7 @@ export default function AdminEventsPage() {
           <div className="bg-brand-black border border-brand-white/10 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-brand-white/10 flex justify-between items-center sticky top-0 bg-brand-black z-10">
               <h2 className="text-xl font-oswald font-bold text-white tracking-widest uppercase">{editingId ? 'Edit Event' : 'Add Event'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">âœ•</button>
             </div>
             <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">

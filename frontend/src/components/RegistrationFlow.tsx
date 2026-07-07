@@ -58,7 +58,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [registrationFee, setRegistrationFee] = useState(15000);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/fees")
+    fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees")
       .then(res => res.json())
       .then(data => {
         const regFee = data.find((f: any) => f.key === 'registration' || f.category === 'REGISTRATION');
@@ -156,7 +156,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
               submissionData.append("playerType", playerType);
               submissionData.append("paymentRef", response.transaction_id ? response.transaction_id.toString() : response.tx_ref);
 
-              const res = await fetch("http://localhost:5000/api/applicants", {
+              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/applicants", {
                 method: "POST",
                 body: submissionData,
               });
@@ -213,7 +213,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
             Your {playerType.toLowerCase()} application and payment have been received. Please join the official WhatsApp group for further instructions and updates on your status.
           </p>
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-brand-gold hover:bg-[#E6C200] text-brand-black font-bold py-4 rounded-full transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,215,0,0.3)]">
-            Join Official WhatsApp Group ↗
+            Join Official WhatsApp Group â†—
           </a>
         </div>
       </div>

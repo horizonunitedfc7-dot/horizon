@@ -38,27 +38,35 @@ app.post('/api/auth/unified/login', async (req, res) => {
     // Check if it's an Admin (email format)
     if (identifier.includes('@')) {
       const admin = await prisma.admin.findUnique({ where: { email: identifier } });
-      if (!admin) return res.status(401).json({ error: "Invalid credentials" });
       
-      const valid = await bcrypt.compare(password, admin.password);
-      if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+      if (admin) {
+        const valid = await bcrypt.compare(password, admin.password);
+        if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
-      const token = jwt.sign({ id: admin.id, role: admin.role }, JWT_SECRET, { expiresIn: '1d' });
-      return res.json({ type: 'ADMIN', token, admin: { name: admin.name, email: admin.email, role: admin.role } });
+        const token = jwt.sign({ id: admin.id, role: admin.role }, JWT_SECRET, { expiresIn: '1d' });
+        return res.json({ type: 'ADMIN', token, admin: { name: admin.name, email: admin.email, role: admin.role } });
+      }
     } 
-    // Otherwise, it's a Player (Registration ID format like HZN-XXXXX)
-    else {
-      const applicant = await prisma.applicant.findUnique({ where: { regno: identifier } });
-      if (!applicant) return res.status(401).json({ error: "Invalid credentials" });
-      
-      if (!applicant.password) return res.status(401).json({ error: "Account not setup for login" });
+    
+    // If not an admin (or not an email), check if it's a Player (Registration ID or Email)
+    const applicant = await prisma.applicant.findFirst({
+      where: {
+        OR: [
+          { regno: identifier },
+          { email: identifier }
+        ]
+      }
+    });
 
-      const valid = await bcrypt.compare(password, applicant.password);
-      if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+    if (!applicant) return res.status(401).json({ error: "Invalid credentials" });
+    
+    if (!applicant.password) return res.status(401).json({ error: "Account not setup for login" });
 
-      const token = jwt.sign({ id: applicant.id, role: applicant.playerType }, JWT_SECRET, { expiresIn: '7d' });
-      return res.json({ type: 'PLAYER', token, player: { name: applicant.firstname, regno: applicant.regno, type: applicant.playerType } });
-    }
+    const valid = await bcrypt.compare(password, applicant.password);
+    if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+
+    const token = jwt.sign({ id: applicant.id, role: applicant.playerType }, JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ type: 'PLAYER', token, player: { name: applicant.firstname, regno: applicant.regno, type: applicant.playerType } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
