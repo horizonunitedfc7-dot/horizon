@@ -308,7 +308,7 @@ export default function PlayerDashboard() {
                         <div className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-1">{event.date}</div>
                         <div className="font-bold text-white mb-1">{event.title}</div>
                         <div className="text-sm text-gray-400 flex items-center gap-2">
-                          ðŸ“ {event.location}
+                          &#128205; {event.location}
                         </div>
                       </div>
                       <div className="bg-brand-gold/10 text-brand-gold px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-brand-gold/20">
