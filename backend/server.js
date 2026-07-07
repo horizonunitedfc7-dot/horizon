@@ -618,6 +618,11 @@ app.get('/api/events', async (req, res) => {
 // TEMPORARY ROUTE: Seed Production Database
 app.get('/api/seed', async (req, res) => {
   try {
+    // Clear existing data to prevent unique constraint errors
+    await prisma.event.deleteMany();
+    await prisma.applicant.deleteMany();
+    await prisma.admin.deleteMany();
+
     // 1. Seed 5 Events
     const events = [
       {
