@@ -681,19 +681,39 @@ app.get('/api/seed', async (req, res) => {
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash("password123", 10);
     
+    const dummyData = {
+      nationality: "Nigerian",
+      state: "Lagos",
+      address: "123 Seed Street",
+      position: "Striker",
+      foot: "Right",
+      height: "180cm",
+      weight: "75kg",
+      experience: 2,
+      bloodgroup: "O+",
+      genotype: "AA",
+      emergencynumber: "08099999999",
+      institute: "Seed High School",
+      classlevel: "SS3",
+      guardianname: "Mr Seed",
+      relationship: "Father",
+      guardianmobile: "08088888888",
+      guardianaddress: "123 Seed Street"
+    };
+
     await prisma.applicant.create({
       data: {
         firstname: "Academic",
         lastname: "One",
         email: "academic1@example.com",
         mobile: "08011111111",
-        dob: "2005-01-01",
         gender: "M",
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
         regno: "HZN-ACA1",
-        age: 18
+        age: 18,
+        ...dummyData
       }
     });
 
@@ -703,13 +723,13 @@ app.get('/api/seed', async (req, res) => {
         lastname: "Two",
         email: "academic2@example.com",
         mobile: "08022222222",
-        dob: "2006-02-02",
         gender: "M",
         playerType: "ACADEMIC",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
         regno: "HZN-ACA2",
-        age: 17
+        age: 17,
+        ...dummyData
       }
     });
 
@@ -720,13 +740,13 @@ app.get('/api/seed', async (req, res) => {
         lastname: "One",
         email: "scholar1@example.com",
         mobile: "08033333333",
-        dob: "2005-03-03",
         gender: "M",
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
         regno: "HZN-SCH1",
-        age: 19
+        age: 19,
+        ...dummyData
       }
     });
 
@@ -736,17 +756,28 @@ app.get('/api/seed', async (req, res) => {
         lastname: "Two",
         email: "scholar2@example.com",
         mobile: "08044444444",
-        dob: "2006-04-04",
         gender: "M",
         playerType: "SCHOLARSHIP",
         applicationStatus: "ACCEPTED",
         password: hashedPassword,
         regno: "HZN-SCH2",
-        age: 18
+        age: 18,
+        ...dummyData
       }
     });
 
-    res.json({ message: "Successfully seeded 5 events, 2 academic players, and 2 scholarship players!" });
+    // 4. Seed Admin Account
+    const adminPassword = await bcrypt.hash("H0riz0n@dm1n2026!", 10);
+    await prisma.admin.create({
+      data: {
+        email: "admin@horizonunitedfc.com",
+        password: adminPassword,
+        name: "Super Admin",
+        role: "ADMIN"
+      }
+    });
+
+    res.json({ message: "Successfully seeded 5 events, 2 academic players, 2 scholarship players, and the Admin account!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
