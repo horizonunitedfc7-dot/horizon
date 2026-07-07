@@ -392,7 +392,7 @@ app.get('/api/admin/applicants', requireAdmin, async (req, res) => {
     });
 
     const total = applicants.length;
-    const approved = applicants.filter(a => a.applicationStatus === 'APPROVED').length;
+    const approved = applicants.filter(a => a.applicationStatus === 'APPROVED' || a.applicationStatus === 'OFFICIAL_SQUAD').length;
     const pending = applicants.filter(a => a.applicationStatus === 'PENDING').length;
     const rejected = applicants.filter(a => a.applicationStatus === 'REJECTED').length;
     

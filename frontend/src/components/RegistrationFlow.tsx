@@ -440,9 +440,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">State/Province</label>
-                  {isMounted && <Select options={states} styles={customSelectStyles} />}
-                  {/* Using a generic text input for state just as placeholder if select gets complex */}
-                  <input name="state" type="text" placeholder="Type state name" className="mt-4 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+                  {isMounted && <Select name="state" options={states} styles={customSelectStyles} />}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">Full Address</label>
