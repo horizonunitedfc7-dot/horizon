@@ -112,3 +112,11 @@ model Event {
   ticketLink  String?
   createdAt   DateTime @default(now())
 }
+
+model AdminNotification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

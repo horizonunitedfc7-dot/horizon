@@ -247,6 +247,14 @@ app.post('/api/payments/verify', requirePlayer, async (req, res) => {
       data: { feeLedger: JSON.stringify(currentLedger) }
     });
 
+    // Create Admin Notification
+    await prisma.adminNotification.create({
+      data: {
+        title: "New Payment Received",
+        message: `${applicant.firstname} ${applicant.lastname} (${applicant.regno}) just made a payment.`
+      }
+    });
+
     // Create Notification Message
     await prisma.message.create({
       data: {
@@ -378,6 +386,14 @@ app.post('/api/applicants', upload.fields([
 
     sendAdminNotification(applicant).catch(err => console.error("Admin WhatsApp Error:", err));
 
+    // Create Admin Notification
+    await prisma.adminNotification.create({
+      data: {
+        title: "New Player Registration",
+        message: `${applicant.firstname} ${applicant.lastname} just registered as a ${applicant.playerType} player.`
+      }
+    });
+
     res.status(201).json({ success: true, applicant });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -385,6 +401,31 @@ app.post('/api/applicants', upload.fields([
 });
 
 // --- ADMIN ROUTES ---
+
+// Get Admin Notifications
+app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
+  try {
+    const notifications = await prisma.adminNotification.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Mark Admin Notification as Read
+app.put('/api/admin/notifications/:id/read', requireAdmin, async (req, res) => {
+  try {
+    await prisma.adminNotification.update({
+      where: { id: req.params.id },
+      data: { isRead: true }
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.get('/api/admin/applicants', requireAdmin, async (req, res) => {
   try {
     const applicants = await prisma.applicant.findMany({

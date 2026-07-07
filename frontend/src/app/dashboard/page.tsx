@@ -370,7 +370,7 @@ export default function PlayerDashboard() {
                       </div>
                       <p className="text-sm text-gray-400 mb-4 whitespace-pre-wrap">{msg.body}</p>
                       <a 
-                        href={`https://wa.me/2348000000000?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
+                        href={`https://wa.me/2348106131520?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
                         target="_blank" 
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-[#25D366]/20 transition-colors"
@@ -459,7 +459,7 @@ export default function PlayerDashboard() {
                       </div>
                       <p className="text-sm text-gray-400 mb-4 whitespace-pre-wrap">{msg.body}</p>
                       <a 
-                        href={`https://wa.me/2348000000000?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
+                        href={`https://wa.me/2348106131520?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
                         target="_blank" 
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-[#25D366]/20 transition-colors"
@@ -943,7 +943,7 @@ export default function PlayerDashboard() {
                     </div>
                     <p className="text-sm text-gray-400 mb-4 whitespace-pre-wrap">{msg.body}</p>
                     <a 
-                      href={`https://wa.me/2348000000000?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
+                      href={`https://wa.me/2348106131520?text=Hello Admin, I am replying to your message: ${msg.subject}`} 
                       target="_blank" 
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-[#25D366]/20 transition-colors"

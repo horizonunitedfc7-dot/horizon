@@ -105,32 +105,17 @@ export default function LandingPage() {
   }, []);
 
   const handleSyncCalendar = () => {
-    let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Horizon United FC//EN\n";
-    events.forEach(evt => {
-      const startDate = new Date(evt.date);
-      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
-      
-      const formatICSDate = (date: Date) => {
-        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      };
+    if (events.length === 0) return;
+    const evt = events[0];
+    const startDate = new Date(evt.date);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+    
+    const formatGoogleDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
 
-      icsContent += "BEGIN:VEVENT\n";
-      icsContent += `DTSTART:${formatICSDate(startDate)}\n`;
-      icsContent += `DTEND:${formatICSDate(endDate)}\n`;
-      icsContent += `SUMMARY:${evt.title}\n`;
-      icsContent += `DESCRIPTION:${evt.description}\n`;
-      if (evt.location) icsContent += `LOCATION:${evt.location}\n`;
-      icsContent += "END:VEVENT\n";
-    });
-    icsContent += "END:VCALENDAR";
-
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'horizon-events.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(evt.title)}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}&details=${encodeURIComponent(evt.description)}&location=${encodeURIComponent(evt.location || 'Horizon United FC')}`;
+    window.open(url, '_blank');
   };
 
   const scrollToPaths = (e: React.MouseEvent) => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Activity, Star, Shield, Crosshair, MapPin, Search } from "lucide-react";
+import { User, Activity, Star, Shield, Crosshair, MapPin, Search, Bell, X, Inbox } from "lucide-react";
 
 type Applicant = {
   id: string;
@@ -62,6 +62,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const [notifications, setNotifications] = useState<{id:string, title:string, message:string, isRead:boolean, createdAt:string}[]>([]);
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
+
   const [scoutRatings, setScoutRatings] = useState({ pace: 50, shooting: 50, passing: 50, physicality: 50 });
   const [coachNotes, setCoachNotes] = useState("");
   const [privateSchedule, setPrivateSchedule] = useState<{title:string, date:string, location:string, type:string}[]>([]);
@@ -106,8 +109,34 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+    try {
+      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/notifications", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setNotifications(await res.json());
+      }
+    } catch (err) {}
+  };
+
+  const markNotificationRead = async (id: string) => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+    try {
+      await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/notifications/${id}/read`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      fetchNotifications();
+    } catch (err) {}
+  };
+
   useEffect(() => {
     fetchApplicants();
+    fetchNotifications();
   }, []);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -405,6 +434,15 @@ export default function AdminDashboard() {
               />
             </div>
             <button 
+              onClick={() => setIsInboxOpen(true)}
+              className="relative p-2 rounded-full bg-white/5 hover:bg-white/10 border border-brand-white/10 transition-colors"
+            >
+              <Bell className="w-5 h-5 text-brand-white" />
+              {notifications.filter(n => !n.isRead).length > 0 && (
+                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-brand-black rounded-full" />
+              )}
+            </button>
+            <button 
               onClick={() => { localStorage.removeItem("adminToken"); router.push("/login"); }}
               className="px-6 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-brand-white/10 transition-colors text-sm font-medium shrink-0"
             >
@@ -412,6 +450,45 @@ export default function AdminDashboard() {
             </button>
           </div>
         </header>
+
+        {/* Inbox Modal */}
+        {isInboxOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-2xl animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-brand-black border border-brand-white/10 rounded-[2rem] shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto transform scale-100 animate-[scaleUp_0.2s_ease-out_forwards] flex flex-col">
+              <div className="sticky top-0 bg-brand-black/90 backdrop-blur-xl border-b border-brand-white/10 px-6 py-4 flex items-center justify-between z-10">
+                <h3 className="text-xl font-oswald font-bold uppercase tracking-widest text-brand-white flex items-center gap-2">
+                  <Inbox className="w-5 h-5 text-brand-gold" /> Admin Inbox
+                </h3>
+                <button onClick={() => setIsInboxOpen(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+              <div className="p-6 flex flex-col gap-4">
+                {notifications.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500">
+                    <Inbox className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>No notifications yet.</p>
+                  </div>
+                ) : (
+                  notifications.map(notif => (
+                    <div key={notif.id} className={`p-4 rounded-xl border ${notif.isRead ? 'bg-white/5 border-white/5' : 'bg-brand-gold/5 border-brand-gold/30'}`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className={`text-sm font-bold uppercase tracking-widest ${notif.isRead ? 'text-gray-400' : 'text-brand-gold'}`}>{notif.title}</h4>
+                        <span className="text-[10px] text-gray-500 uppercase">{new Date(notif.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm text-gray-300 mb-3">{notif.message}</p>
+                      {!notif.isRead && (
+                        <button onClick={() => markNotificationRead(notif.id)} className="text-[10px] uppercase font-bold tracking-widest text-brand-gold hover:text-white transition-colors">
+                          Mark as Read
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Matchday Scoreboard Analytics */}
         <div className="flex flex-wrap gap-4 mb-12">
