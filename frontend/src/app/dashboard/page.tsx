@@ -10,6 +10,8 @@ type PlayerData = {
   firstname: string;
   lastname: string;
   regno: string;
+  email?: string;
+  mobile?: string;
   playerType: 'ACADEMIC' | 'SCHOLARSHIP';
   applicationStatus: string;
   feeLedger?: string;
