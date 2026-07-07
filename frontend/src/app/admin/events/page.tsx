@@ -228,7 +228,7 @@ export default function AdminEventsPage() {
           <div className="bg-brand-black border border-brand-white/10 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-brand-white/10 flex justify-between items-center sticky top-0 bg-brand-black z-10">
               <h2 className="text-xl font-oswald font-bold text-white tracking-widest uppercase">{editingId ? 'Edit Event' : 'Add Event'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">âœ•</button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">&#10005;</button>
             </div>
             <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">

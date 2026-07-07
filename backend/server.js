@@ -65,7 +65,8 @@ app.post('/api/auth/unified/login', async (req, res) => {
     const token = jwt.sign({ id: applicant.id, role: applicant.playerType }, JWT_SECRET, { expiresIn: '7d' });
     return res.json({ type: 'PLAYER', token, player: { name: applicant.firstname, regno: applicant.regno, type: applicant.playerType } });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Login Error:", err);
+    res.status(500).json({ error: "Server error occurred. Please try again later." });
   }
 });
 
@@ -726,7 +727,7 @@ app.get('/api/seed', async (req, res) => {
         mobile: "08011111111",
         gender: "M",
         playerType: "ACADEMIC",
-        applicationStatus: "ACCEPTED",
+        applicationStatus: "APPROVED",
         paymentStatus: "COMPLETED",
         paymentRef: "FLW_SEED_1001",
         passportPhoto: "https://ui-avatars.com/api/?name=Tunde+Bakare&background=0D8ABC&color=fff&size=200",
@@ -745,7 +746,7 @@ app.get('/api/seed', async (req, res) => {
         mobile: "08022222222",
         gender: "M",
         playerType: "ACADEMIC",
-        applicationStatus: "ACCEPTED",
+        applicationStatus: "APPROVED",
         paymentStatus: "COMPLETED",
         paymentRef: "FLW_SEED_1002",
         passportPhoto: "https://ui-avatars.com/api/?name=Chuka+Obi&background=1E3A8A&color=fff&size=200",
@@ -765,7 +766,7 @@ app.get('/api/seed', async (req, res) => {
         mobile: "08033333333",
         gender: "M",
         playerType: "SCHOLARSHIP",
-        applicationStatus: "ACCEPTED",
+        applicationStatus: "APPROVED",
         paymentStatus: "COMPLETED",
         paymentRef: "FLW_SEED_1003",
         passportPhoto: "https://ui-avatars.com/api/?name=Ibrahim+Musa&background=F59E0B&color=fff&size=200",
@@ -784,7 +785,7 @@ app.get('/api/seed', async (req, res) => {
         mobile: "08044444444",
         gender: "M",
         playerType: "SCHOLARSHIP",
-        applicationStatus: "ACCEPTED",
+        applicationStatus: "APPROVED",
         paymentStatus: "COMPLETED",
         paymentRef: "FLW_SEED_1004",
         passportPhoto: "https://ui-avatars.com/api/?name=Emeka+Eze&background=10B981&color=fff&size=200",

@@ -646,7 +646,7 @@ export default function AdminDashboard() {
                                 <span className="text-white">{item.title}</span>
                               </div>
                               <button onClick={() => setPrivateSchedule(privateSchedule.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-300">
-                                âœ•
+                                &#10005;
                               </button>
                             </div>
                           ))}

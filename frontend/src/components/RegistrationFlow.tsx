@@ -213,7 +213,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
             Your {playerType.toLowerCase()} application and payment have been received. Please join the official WhatsApp group for further instructions and updates on your status.
           </p>
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-brand-gold hover:bg-[#E6C200] text-brand-black font-bold py-4 rounded-full transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,215,0,0.3)]">
-            Join Official WhatsApp Group â†—
+            Join Official WhatsApp Group &#8599;
           </a>
         </div>
       </div>
