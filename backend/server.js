@@ -678,7 +678,7 @@ app.get('/api/seed', async (req, res) => {
     }
 
     // 2. Seed 2 Academic Players
-    const bcrypt = require('bcryptjs');
+    const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash("password123", 10);
     
     await prisma.applicant.create({
