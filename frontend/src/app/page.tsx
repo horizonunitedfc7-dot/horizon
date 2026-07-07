@@ -259,12 +259,12 @@ export default function LandingPage() {
       <section className="relative z-10 py-32 px-4 md:px-8 bg-brand-white text-brand-black border-t border-brand-black/5 overflow-hidden">
         
         {/* Left Floating Image (Academic Player) */}
-        <div className="hidden xl:block absolute -left-[450px] 2xl:-left-[170px] bottom-0 h-[90%] pointer-events-none z-0">
+        <div className="hidden lg:block absolute -left-[10.625rem] bottom-0 h-[90%] pointer-events-none z-0">
           <img src="/academic-player.png" alt="Academic Player" className="w-auto h-full object-contain object-bottom drop-shadow-2xl" />
         </div>
 
         {/* Right Floating Image (Pro Player) */}
-        <div className="hidden xl:block absolute -right-[450px] 2xl:-right-[400px] bottom-0 h-[90%] pointer-events-none z-0">
+        <div className="hidden lg:block absolute -right-[25rem] bottom-0 h-[90%] pointer-events-none z-0">
           <img src="/pro-player.png" alt="Professional Player" className="w-auto h-full object-contain object-bottom drop-shadow-2xl" />
         </div>
 
