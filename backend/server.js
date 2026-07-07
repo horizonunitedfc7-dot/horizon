@@ -669,6 +669,24 @@ app.get('/api/seed', async (req, res) => {
         teamA: "",
         teamB: "",
         isPoster: false
+      },
+      {
+        title: "Youth Development Camp",
+        description: "A specialized training camp for young talents.",
+        location: "Horizon Training Ground",
+        date: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
+        teamA: "",
+        teamB: "",
+        isPoster: false
+      },
+      {
+        title: "Away Match vs Kano Pillars",
+        description: "Crucial away fixture in the league.",
+        location: "Sani Abacha Stadium",
+        date: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000),
+        teamA: "Kano Pillars",
+        teamB: "Horizon United",
+        isPoster: true
       }
     ];
 
@@ -776,7 +794,7 @@ app.get('/api/seed', async (req, res) => {
       }
     });
 
-    res.json({ message: "Successfully seeded 5 events, 2 academic players, 2 scholarship players, and the Admin account!" });
+    res.json({ message: "Successfully seeded 7 events, 2 academic players, 2 scholarship players, and the Admin account!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
