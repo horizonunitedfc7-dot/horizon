@@ -152,8 +152,8 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
           setError("Please enter a valid age.");
           return;
         }
-        if (playerType === 'ACADEMIC' && (age < 7 || age > 35)) {
-          setError("Academic players must be between 7 and 35 years old.");
+        if (playerType === 'ACADEMIC' && (age < 7 || age > 30)) {
+          setError("Academic players must be between 7 and 30 years old.");
           return;
         }
         if (playerType === 'SCHOLARSHIP' && (age < 10 || age > 35)) {
