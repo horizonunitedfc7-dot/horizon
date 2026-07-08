@@ -47,6 +47,15 @@ const customSelectStyles = {
   indicatorSeparator: () => ({ display: 'none' })
 };
 
+// Convert ISO country code to flag emoji
+const isoToFlag = (iso: string) => {
+  return iso
+    .toUpperCase()
+    .split('')
+    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+    .join('');
+};
+
 export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC' | 'SCHOLARSHIP' }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -97,7 +106,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [parentConsent, setParentConsent] = useState("on");
 
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string}>({ value: '+234', label: '🇳🇬 +234' });
+  const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string}>({ value: '+234', label: `${isoToFlag('NG')} +234` });
 
   useEffect(() => setIsMounted(true), []);
 
@@ -110,7 +119,12 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const totalSteps = 6;
   const countries = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
   const states = selectedCountryCode ? State.getStatesOfCountry(selectedCountryCode).map(s => ({ value: s.name, label: s.name })) : [];
-  const dialCodeOptions = Country.getAllCountries().map(c => ({ value: `+${c.phonecode}`, label: `${c.flag} +${c.phonecode}` }));
+  const dialCodeOptions = Country.getAllCountries()
+    .map(c => {
+      const code = c.phonecode.replace(/^\+/, '').split(' ')[0].split('-')[0].split(',')[0];
+      return { value: `+${code}`, label: `${isoToFlag(c.isoCode)} +${code}` };
+    })
+    .filter((opt, i, arr) => arr.findIndex(o => o.value === opt.value) === i);
 
   const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -455,7 +469,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
                   <div className="flex gap-3">
-                    <div className="w-[140px] shrink-0">
+                    <div className="w-[160px] shrink-0">
                       {isMounted && <Select
                         options={dialCodeOptions}
                         styles={customSelectStyles}
