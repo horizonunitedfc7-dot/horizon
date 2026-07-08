@@ -7,8 +7,6 @@ import { Country, State } from 'country-state-city';
 import Select from 'react-select';
 import { X, Check, ArrowLeft, Upload, Eye, EyeOff } from "lucide-react";
 import { gsap } from "gsap";
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 
 // High-End Select Styling
 const customSelectStyles = {
@@ -98,7 +96,8 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [releasedFromClub, setReleasedFromClub] = useState("on");
   const [parentConsent, setParentConsent] = useState("on");
 
-  const [whatsappNumber, setWhatsappNumber] = useState<string>('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string}>({ value: '+234', label: '🇳🇬 +234' });
 
   useEffect(() => setIsMounted(true), []);
 
@@ -111,6 +110,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const totalSteps = 6;
   const countries = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
   const states = selectedCountryCode ? State.getStatesOfCountry(selectedCountryCode).map(s => ({ value: s.name, label: s.name })) : [];
+  const dialCodeOptions = Country.getAllCountries().map(c => ({ value: `+${c.phonecode}`, label: `${c.flag} +${c.phonecode}` }));
 
   const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -432,8 +432,8 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
               <h3 className="text-2xl font-medium mb-8 pb-4 border-b border-white/10">Demographics</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Age</label>
-                  <input name="age" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+                  <label className="block text-sm text-gray-400 mb-2">Age <span className="text-gray-500">{playerType === 'ACADEMIC' ? '(7 – 30)' : '(10 – 35)'}</span></label>
+                  <input name="age" type="number" min={playerType === 'ACADEMIC' ? 7 : 10} max={playerType === 'ACADEMIC' ? 30 : 35} placeholder={playerType === 'ACADEMIC' ? '7 – 30' : '10 – 35'} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Gender</label>
@@ -454,14 +454,25 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
-                  <PhoneInput
-                    international
-                    defaultCountry="NG"
-                    value={whatsappNumber}
-                    onChange={(val: any) => setWhatsappNumber(val)}
-                    className="PhoneInput-custom w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus-within:border-white/30 transition-colors"
-                  />
-                  <input type="hidden" name="mobile" value={whatsappNumber || ""} />
+                  <div className="flex gap-3">
+                    <div className="w-[140px] shrink-0">
+                      {isMounted && <Select
+                        options={dialCodeOptions}
+                        styles={customSelectStyles}
+                        defaultValue={dialCodeOptions.find(d => d.value === '+234')}
+                        onChange={(v: any) => setSelectedDialCode(v)}
+                        isSearchable
+                      />}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="8106131520"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <input type="hidden" name="mobile" value={`${selectedDialCode.value}${whatsappNumber}`} />
                 </div>
               </div>
             </div>
