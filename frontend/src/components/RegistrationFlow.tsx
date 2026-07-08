@@ -29,12 +29,23 @@ const customSelectStyles = {
     borderRadius: '1rem',
     zIndex: 9999,
   }),
+  menuList: (provided: any) => ({
+    ...provided,
+    padding: '4px',
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(255,215,0,0.3) transparent',
+    '&::-webkit-scrollbar': { width: '6px' },
+    '&::-webkit-scrollbar-track': { background: 'transparent' },
+    '&::-webkit-scrollbar-thumb': { background: 'rgba(255,215,0,0.3)', borderRadius: '3px' },
+    '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(255,215,0,0.5)' },
+  }),
   option: (provided: any, state: any) => ({
     ...provided,
     backgroundColor: state.isSelected ? 'rgba(255, 255, 255, 0.1)' : state.isFocused ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
     color: state.isSelected ? '#fff' : '#a1a1aa',
     cursor: 'pointer',
     padding: '12px 16px',
+    borderRadius: '0.5rem',
   }),
   singleValue: (provided: any) => ({
     ...provided,
@@ -45,15 +56,6 @@ const customSelectStyles = {
     color: '#fff'
   }),
   indicatorSeparator: () => ({ display: 'none' })
-};
-
-// Convert ISO country code to flag emoji
-const isoToFlag = (iso: string) => {
-  return iso
-    .toUpperCase()
-    .split('')
-    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
-    .join('');
 };
 
 export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC' | 'SCHOLARSHIP' }) {
@@ -106,7 +108,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [parentConsent, setParentConsent] = useState("on");
 
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string}>({ value: '+234', label: `${isoToFlag('NG')} +234` });
+  const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string, iso:string}>({ value: '+234', label: '+234', iso: 'NG' });
 
   useEffect(() => setIsMounted(true), []);
 
@@ -122,9 +124,16 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const dialCodeOptions = Country.getAllCountries()
     .map(c => {
       const code = c.phonecode.replace(/^\+/, '').split(' ')[0].split('-')[0].split(',')[0];
-      return { value: `+${code}`, label: `${isoToFlag(c.isoCode)} +${code}` };
+      return { value: `+${code}`, label: `+${code}`, iso: c.isoCode };
     })
     .filter((opt, i, arr) => arr.findIndex(o => o.value === opt.value) === i);
+
+  const formatDialCodeLabel = (option: any) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <img src={`https://flagcdn.com/w20/${option.iso?.toLowerCase()}.png`} alt="" width={20} height={14} style={{ borderRadius: '2px', objectFit: 'cover' }} />
+      <span>{option.label}</span>
+    </div>
+  );
 
   const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -464,7 +473,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">Full Address</label>
-                  <textarea name="address" rows={2} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+                  <textarea name="address" rows={2} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors resize-none" style={{ height: '72px' }} />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
@@ -476,6 +485,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                         defaultValue={dialCodeOptions.find(d => d.value === '+234')}
                         onChange={(v: any) => setSelectedDialCode(v)}
                         isSearchable
+                        formatOptionLabel={formatDialCodeLabel}
                       />}
                     </div>
                     <input
