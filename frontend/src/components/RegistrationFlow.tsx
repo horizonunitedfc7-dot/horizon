@@ -7,6 +7,8 @@ import { Country, State } from 'country-state-city';
 import Select from 'react-select';
 import { X, Check, ArrowLeft, Upload, Eye, EyeOff } from "lucide-react";
 import { gsap } from "gsap";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 // High-End Select Styling
 const customSelectStyles = {
@@ -96,7 +98,15 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [releasedFromClub, setReleasedFromClub] = useState("on");
   const [parentConsent, setParentConsent] = useState("on");
 
+  const [whatsappNumber, setWhatsappNumber] = useState<string>('');
+
   useEffect(() => setIsMounted(true), []);
+
+  const genderOptions = [{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }];
+  const positionOptions = [{ value: 'Goalkeeper', label: 'Goalkeeper' }, { value: 'Defender', label: 'Defender' }, { value: 'Midfielder', label: 'Midfielder' }, { value: 'Forward', label: 'Forward' }];
+  const footOptions = [{ value: 'Right', label: 'Right' }, { value: 'Left', label: 'Left' }, { value: 'Both', label: 'Both' }];
+  const bloodGroupOptions = [{ value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }, { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }];
+  const genotypeOptions = [{ value: 'AA', label: 'AA' }, { value: 'AS', label: 'AS' }, { value: 'SS', label: 'SS' }, { value: 'AC', label: 'AC' }, { value: 'SC', label: 'SC' }];
 
   const totalSteps = 6;
   const countries = Country.getAllCountries().map(c => ({ value: c.isoCode, label: c.name }));
@@ -427,11 +437,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Gender</label>
-                  <select name="gender" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors">
-                    <option value="">Select...</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
+                  {isMounted && <Select name="gender" options={genderOptions} styles={customSelectStyles} placeholder="Select..." />}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">Country</label>
@@ -447,8 +453,15 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                   <textarea name="address" rows={2} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-400 mb-2">Mobile Number</label>
-                  <input name="mobile" type="text" placeholder="+234..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+                  <label className="block text-sm text-gray-400 mb-2">WhatsApp Number</label>
+                  <PhoneInput
+                    international
+                    defaultCountry="NG"
+                    value={whatsappNumber}
+                    onChange={(val: any) => setWhatsappNumber(val)}
+                    className="PhoneInput-custom w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus-within:border-white/30 transition-colors"
+                  />
+                  <input type="hidden" name="mobile" value={whatsappNumber || ""} />
                 </div>
               </div>
             </div>
@@ -459,22 +472,11 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Preferred Position</label>
-                  <select name="position" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white">
-                    <option value="">Select...</option>
-                    <option value="Goalkeeper">Goalkeeper</option>
-                    <option value="Defender">Defender</option>
-                    <option value="Midfielder">Midfielder</option>
-                    <option value="Forward">Forward</option>
-                  </select>
+                  {isMounted && <Select name="position" options={positionOptions} styles={customSelectStyles} placeholder="Select..." />}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Strong Foot</label>
-                  <select name="foot" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white">
-                    <option value="">Select...</option>
-                    <option value="Right">Right</option>
-                    <option value="Left">Left</option>
-                    <option value="Both">Both</option>
-                  </select>
+                  {isMounted && <Select name="foot" options={footOptions} styles={customSelectStyles} placeholder="Select..." />}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Height (e.g., 180cm)</label>
@@ -501,11 +503,11 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Blood Group</label>
-                  <input name="bloodgroup" type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
+                  {isMounted && <Select name="bloodgroup" options={bloodGroupOptions} styles={customSelectStyles} placeholder="Select..." />}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Genotype</label>
-                  <input name="genotype" type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
+                  {isMounted && <Select name="genotype" options={genotypeOptions} styles={customSelectStyles} placeholder="Select..." />}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">Emergency Contact Number</label>

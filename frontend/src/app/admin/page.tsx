@@ -117,7 +117,26 @@ export default function AdminDashboard() {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
-        setNotifications(await res.json());
+        const data = await res.json();
+        setNotifications(data);
+        
+        // Trigger push notifications for new unread notifications
+        const pushedIds = JSON.parse(localStorage.getItem("pushedNotifications") || "[]");
+        let newPushes = false;
+        
+        data.forEach((notif: any) => {
+          if (!notif.isRead && !pushedIds.includes(notif.id)) {
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification(notif.title, { body: notif.message });
+            }
+            pushedIds.push(notif.id);
+            newPushes = true;
+          }
+        });
+        
+        if (newPushes) {
+          localStorage.setItem("pushedNotifications", JSON.stringify(pushedIds));
+        }
       }
     } catch (err) {}
   };
@@ -137,6 +156,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchApplicants();
     fetchNotifications();
+    
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleSendMessage = async (e: React.FormEvent) => {
