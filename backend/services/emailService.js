@@ -150,4 +150,44 @@ const sendForgotPasswordEmail = async (applicant, newPassword) => {
   }
 };
 
-module.exports = { sendRegistrationEmail, sendApprovalEmail, sendRejectionEmail, sendForgotPasswordEmail };
+const sendAdminEmailNotification = async (applicant) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+      from: `"Horizon United FC System" <${process.env.EMAIL_USER}>`,
+      to: 'admin@horizonunited.com',
+      subject: 'New Registration Alert - Horizon United FC',
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #B8860B;">New Player Registration</h2>
+          <p>A new player has just completed their registration on the platform.</p>
+          <ul>
+            <li><strong>Name:</strong> ${applicant.firstname} ${applicant.lastname}</li>
+            <li><strong>Type:</strong> ${applicant.playerType}</li>
+            <li><strong>Reg No:</strong> ${applicant.regno}</li>
+            <li><strong>Payment Status:</strong> ${applicant.paymentStatus}</li>
+          </ul>
+          <p>Please log in to the admin dashboard to review their full profile and receipt.</p>
+          <br/>
+          <p>System Generated Message</p>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Admin notification email sent successfully: ', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin notification email:', error);
+    return false;
+  }
+};
+
+module.exports = { sendRegistrationEmail, sendApprovalEmail, sendRejectionEmail, sendForgotPasswordEmail, sendAdminEmailNotification };

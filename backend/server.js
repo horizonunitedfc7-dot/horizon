@@ -5,7 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { generateReceiptPDF } = require('./services/pdfGenerator');
-const { sendRegistrationEmail, sendApprovalEmail, sendRejectionEmail, sendForgotPasswordEmail } = require('./services/emailService');
+const { sendRegistrationEmail, sendApprovalEmail, sendRejectionEmail, sendForgotPasswordEmail, sendAdminEmailNotification } = require('./services/emailService');
 const { sendWhatsAppDocument, sendAdminNotification, sendWhatsAppText } = require('./services/whatsappService');
 const multer = require('multer');
 const path = require('path');
@@ -412,6 +412,7 @@ app.post('/api/applicants', upload.fields([
     }).catch(err => console.error("PDF/Email/WhatsApp Error:", err));
 
     sendAdminNotification(applicant).catch(err => console.error("Admin WhatsApp Error:", err));
+    sendAdminEmailNotification(applicant).catch(err => console.error("Admin Email Error:", err));
 
     // Create Admin Notification
     await prisma.adminNotification.create({
