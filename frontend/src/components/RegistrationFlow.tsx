@@ -113,6 +113,9 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
 
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string, iso:string}>({ value: '+234', label: '+234', iso: 'NG' });
+  
+  const [guardianWhatsappNumber, setGuardianWhatsappNumber] = useState('');
+  const [selectedGuardianDialCode, setSelectedGuardianDialCode] = useState<{value:string, label:string, iso:string}>({ value: '+234', label: '+234', iso: 'NG' });
 
   useEffect(() => setIsMounted(true), []);
 
@@ -485,7 +488,11 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                       type="text"
                       placeholder="8106131520"
                       value={whatsappNumber}
-                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9]/g, '');
+                        if (val.startsWith('0')) val = val.substring(1);
+                        setWhatsappNumber(val);
+                      }}
                       className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors"
                     />
                   </div>
@@ -568,7 +575,30 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Guardian Mobile</label>
-                  <input name="guardianmobile" type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
+                  <div className="flex gap-3">
+                    <div className="w-[160px] shrink-0">
+                      {isMounted && <Select
+                        options={dialCodeOptions}
+                        styles={customSelectStyles}
+                        defaultValue={dialCodeOptions.find(d => d.value === '+234')}
+                        onChange={(v: any) => setSelectedGuardianDialCode(v)}
+                        isSearchable
+                        formatOptionLabel={formatDialCodeLabel}
+                      />}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="8106131520"
+                      value={guardianWhatsappNumber}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9]/g, '');
+                        if (val.startsWith('0')) val = val.substring(1);
+                        setGuardianWhatsappNumber(val);
+                      }}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <input type="hidden" name="guardianmobile" value={`${selectedGuardianDialCode.value}${guardianWhatsappNumber}`} />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm text-gray-400 mb-2">Guardian Address</label>
