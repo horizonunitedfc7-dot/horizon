@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Script from "next/script";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Country, State } from 'country-state-city';
 import Select from 'react-select';
 import { X, Check, ArrowLeft, Upload, Eye, EyeOff } from "lucide-react";
@@ -59,6 +60,7 @@ const customSelectStyles = {
 };
 
 export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC' | 'SCHOLARSHIP' }) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -70,9 +72,10 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   const [showPassword, setShowPassword] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [flwKey, setFlwKey] = useState("");
+  const [registeredId, setRegisteredId] = useState("");
 
   useEffect(() => {
-    fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees`)
       .then(res => res.json())
       .then(data => {
         const regFee = data.find((f: any) => f.key === 'registration' || f.category === 'REGISTRATION');
@@ -80,7 +83,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
       })
       .catch(console.error);
 
-    fetch("https://horizon-backend-production-4f7a.up.railway.app/api/config/flutterwave")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/config/flutterwave`)
       .then(res => res.json())
       .then(data => {
         if (data.publicKey) setFlwKey(data.publicKey);
@@ -106,6 +109,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
   // Verification Documents State
   const [releasedFromClub, setReleasedFromClub] = useState("on");
   const [parentConsent, setParentConsent] = useState("on");
+  const [receiptFileName, setReceiptFileName] = useState('');
 
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [selectedDialCode, setSelectedDialCode] = useState<{value:string, label:string, iso:string}>({ value: '+234', label: '+234', iso: 'NG' });
@@ -161,7 +165,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
 
         setIsCheckingEmail(true);
         try {
-          const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/check-email?email=${encodeURIComponent(data.email as string)}`);
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/check-email?email=${encodeURIComponent(data.email as string)}`);
           if (res.ok) {
             const result = await res.json();
             if (result.exists) {
@@ -228,58 +232,33 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const submissionData = new FormData(e.currentTarget);
+    submissionData.append("playerType", playerType);
 
     setIsProcessing(true);
 
-    // @ts-ignore
-    if (typeof window !== "undefined" && window.FlutterwaveCheckout) {
-      // @ts-ignore
-      window.FlutterwaveCheckout({
-        public_key: flwKey || process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
-        tx_ref: Date.now().toString(),
-        amount: registrationFee, 
-        currency: "NGN",
-        payment_options: "card,mobilemoney,ussd",
-        customer: {
-          email: (data.email as string) || "user@example.com",
-          phone_number: (data.mobile as string) || "",
-          name: `${data.firstname} ${data.lastname}`,
-        },
-        customizations: {
-          title: "Horizon United FC",
-          description: `${playerType} Registration Fee`,
-          logo: "https://i.imgur.com/vH0zY7X.png", 
-        },
-        callback: async (response: any) => {
-          if (response.status === "successful" || response.status === "completed") {
-            try {
-              const submissionData = new FormData(e.currentTarget);
-              submissionData.append("playerType", playerType);
-              submissionData.append("paymentRef", response.transaction_id ? response.transaction_id.toString() : response.tx_ref);
-
-              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/applicants", {
-                method: "POST",
-                body: submissionData,
-              });
-              if (res.ok) {
-                setIsSuccess(true);
-              } else {
-                const errData = await res.json();
-                alert(`Payment verified, but saving failed: ${errData.error}`);
-              }
-            } catch (err) {
-              alert("Server error saving applicant");
-            }
-          }
-          setIsProcessing(false);
-        },
-        onclose: () => setIsProcessing(false),
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/applicants`, {
+        method: "POST",
+        body: submissionData,
       });
+      if (res.ok) {
+        const responseData = await res.json();
+        if (responseData.applicant?.regno) {
+          setRegisteredId(responseData.applicant.regno);
+        }
+        setIsSuccess(true);
+      } else {
+        const errData = await res.json();
+        alert(`Failed to submit application: ${errData.error}`);
+      }
+    } catch (err) {
+      alert("Server error saving applicant. Please try again later.");
     }
+    
+    setIsProcessing(false);
   };
 
   if (isRejected) {
@@ -314,10 +293,24 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
             <Check className="w-10 h-10" strokeWidth={2} />
           </div>
           <h2 className="text-3xl font-bold text-brand-white mb-4 tracking-tight">Under Review</h2>
-          <p className="text-gray-400 leading-relaxed mb-10 text-lg">
+          
+          {registeredId && (
+            <div className="bg-[#111] border border-brand-white/10 rounded-2xl p-4 mb-6 shadow-inner">
+              <p className="text-sm text-gray-400 mb-1">Your Registration ID</p>
+              <p className="text-2xl font-mono text-brand-gold tracking-widest font-bold">{registeredId}</p>
+            </div>
+          )}
+
+          <p className="text-gray-400 leading-relaxed mb-6 text-lg">
             Your {playerType.toLowerCase()} application and payment have been received. Please join the official WhatsApp group for further instructions and updates on your status.
           </p>
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-brand-gold hover:bg-[#E6C200] text-brand-black font-bold py-4 rounded-full transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+
+          <div className="bg-brand-gold/10 border border-brand-gold/20 rounded-xl p-4 mb-8 text-left">
+            <p className="text-brand-white/90 text-sm leading-relaxed">
+              <span className="font-bold text-brand-gold">Important:</span> You can now log into your player dashboard using your Registration ID (or Email) and the password you created during registration.
+            </p>
+          </div>
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" onClick={() => setTimeout(() => router.push('/login'), 500)} className="block w-full bg-brand-gold hover:bg-[#E6C200] text-brand-black font-bold py-4 rounded-full transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,215,0,0.3)]">
             Join Official WhatsApp Group &#8599;
           </a>
         </div>
@@ -586,16 +579,66 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
 
             {/* STEP 6: Agreement & Submit */}
             <div className={`transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${currentStep === 6 ? 'opacity-100 translate-y-0 block' : 'hidden opacity-0 translate-y-8'}`}>
-              <h3 className="text-2xl font-medium mb-8 pb-4 border-b border-white/10">Agreements</h3>
-              <div className="space-y-6">
-                <label className="flex items-start gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl cursor-pointer">
+              <h3 className="text-2xl font-medium mb-8 pb-4 border-b border-white/10">Agreements & Payment</h3>
+              <div className="space-y-6 mb-8">
+                <label className="flex items-start gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors">
                   <input type="checkbox" name="rules" required className="mt-1 w-5 h-5 accent-brand-gold rounded" />
                   <span className="text-gray-300 leading-relaxed text-sm">I agree to abide by the rules and regulations of Horizon United FC.</span>
                 </label>
-                <label className="flex items-start gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl cursor-pointer">
+                <label className="flex items-start gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors">
                   <input type="checkbox" name="discipline" required className="mt-1 w-5 h-5 accent-brand-gold rounded" />
                   <span className="text-gray-300 leading-relaxed text-sm">I understand that discipline, respect, and commitment are strictly expected.</span>
                 </label>
+              </div>
+              
+              <div className="bg-white/5 border border-brand-gold/30 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 blur-[40px] rounded-full pointer-events-none"></div>
+                <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  Registration Payment
+                </h4>
+                <p className="text-sm text-gray-400 mb-6 leading-relaxed max-w-lg">
+                  Please transfer the exact amount to the account below and upload your payment receipt to complete your registration.
+                </p>
+                <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Bank</div>
+                      <div className="font-semibold text-white">UBA</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Amount</div>
+                      <div className="font-mono font-bold text-brand-gold text-lg">&#8358;{registrationFee.toLocaleString()}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Account Name</div>
+                      <div className="font-semibold text-white">Horizon United FC LTD</div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Account Number</div>
+                      <div className="font-mono font-bold text-white text-xl tracking-wider">1030851781</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">Upload Payment Receipt (Image/PDF)</label>
+                  <div className="relative group cursor-pointer">
+                    <input 
+                      type="file" 
+                      name="registrationReceipt" 
+                      accept="image/*,.pdf" 
+                      required 
+                      className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer" 
+                      onChange={(e) => setReceiptFileName(e.target.files?.[0]?.name || '')}
+                    />
+                    <div className="bg-black/20 border border-white/10 border-dashed rounded-xl p-4 flex items-center justify-center gap-3 group-hover:border-brand-gold/50 transition-colors">
+                      <Upload className="w-5 h-5 text-brand-gold" strokeWidth={2} />
+                      <span className="text-sm text-gray-400 group-hover:text-gray-300">
+                        {receiptFileName || "Choose file or drag & drop"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -620,7 +663,7 @@ export default function RegistrationFlow({ playerType }: { playerType: 'ACADEMIC
                 </button>
               ) : (
                 <button type="submit" disabled={isProcessing} className="group relative flex items-center gap-4 bg-brand-gold text-brand-black px-8 py-3 rounded-full font-semibold overflow-hidden transition-transform active:scale-[0.98]">
-                  <span className="relative z-10">{isProcessing ? "Processing..." : `Pay \u20A6${registrationFee.toLocaleString()} to Submit`}</span>
+                  <span className="relative z-10">{isProcessing ? "Processing..." : `Submit Application`}</span>
                   <div className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center relative z-10 group-hover:translate-x-1 transition-transform">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   </div>

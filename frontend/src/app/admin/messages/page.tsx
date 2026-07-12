@@ -17,7 +17,7 @@ export default function AdminMessages() {
     const token = localStorage.getItem("adminToken");
 
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/messages", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

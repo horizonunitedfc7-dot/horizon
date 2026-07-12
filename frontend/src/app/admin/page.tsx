@@ -24,6 +24,11 @@ type Applicant = {
   parentConsent: boolean;
   consentLetter?: string;
   clubReleaseLetter?: string;
+  registrationReceipt?: string;
+  academyFeeReceipt?: string;
+  academyFeeStatus?: string;
+  academyBalanceReceipt?: string;
+  academyBalanceStatus?: string;
   
   scoutRatings?: string;
   privateSchedule?: string;
@@ -91,7 +96,7 @@ export default function AdminDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -113,7 +118,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     if (!token) return;
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/notifications", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/notifications`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -145,7 +150,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     if (!token) return;
     try {
-      await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/notifications/${id}/read`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/notifications/${id}/read`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -174,7 +179,7 @@ export default function AdminDashboard() {
     setMsgLoading(true);
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/admin/messages", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
@@ -202,10 +207,68 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveRegistration = async (id: string) => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${id}/approve-registration`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchApplicants();
+        setSelectedApplicant(prev => prev ? { ...prev, paymentStatus: 'COMPLETED' } : null);
+        showToast("Registration payment approved!", "success");
+      } else {
+        showToast("Failed to approve registration.", "error");
+      }
+    } catch (err) {
+      showToast("Error approving registration.", "error");
+    }
+  };
+
+  const handleApproveAcademyFee = async (id: string) => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${id}/approve-academy-fee`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchApplicants();
+        setSelectedApplicant(prev => prev ? { ...prev, academyFeeStatus: 'APPROVED' } : null);
+        showToast("Academy fee payment approved!", "success");
+      } else {
+        showToast("Failed to approve academy fee.", "error");
+      }
+    } catch (err) {
+      showToast("Error approving academy fee.", "error");
+    }
+  };
+
+  const handleApproveAcademyBalance = async (id: string) => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${id}/approve-academy-balance`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchApplicants();
+        setSelectedApplicant(prev => prev ? { ...prev, academyBalanceStatus: 'COMPLETED' } : null);
+        showToast("Academy balance payment approved!", "success");
+      } else {
+        showToast("Failed to approve academy balance.", "error");
+      }
+    } catch (err) {
+      showToast("Error approving academy balance.", "error");
+    }
+  };
+
+
   const handleStatusChange = async (id: string, status: string, reason?: string) => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${id}/status`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -235,7 +298,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     
     try {
-      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${selectedApplicant.id}/squad-data`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${selectedApplicant.id}/squad-data`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -262,7 +325,7 @@ export default function AdminDashboard() {
 
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/applicants/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/applicants/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -371,7 +434,7 @@ export default function AdminDashboard() {
                 <div className="relative w-full aspect-[4/3] bg-gradient-to-t from-brand-black/50 to-transparent flex items-end justify-center pt-8 overflow-hidden">
                   {app.passportPhoto ? (
                     <img 
-                      src={app.passportPhoto.startsWith('http') ? app.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${app.passportPhoto.startsWith('/') ? '' : '/'}${app.passportPhoto}`} 
+                      src={app.passportPhoto.startsWith('http') ? app.passportPhoto : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${app.passportPhoto.startsWith('/') ? '' : '/'}${app.passportPhoto}`} 
                       alt={app.firstname} 
                       className="h-full w-auto object-cover object-top drop-shadow-2xl grayscale group-hover:grayscale-0 transition-all duration-500" 
                       style={{ WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%)' }} 
@@ -552,7 +615,7 @@ export default function AdminDashboard() {
             <div className="sticky top-0 bg-brand-black/90 backdrop-blur-xl border-b border-brand-white/10 px-8 py-6 flex items-center justify-between z-10">
               <div className="flex items-center gap-6">
                 {selectedApplicant.passportPhoto ? (
-                  <img src={selectedApplicant.passportPhoto.startsWith('http') ? selectedApplicant.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.passportPhoto.startsWith('/') ? '' : '/'}${selectedApplicant.passportPhoto}`} alt="Passport" className="w-16 h-16 rounded-full object-cover border border-white/20" />
+                  <img src={selectedApplicant.passportPhoto.startsWith('http') ? selectedApplicant.passportPhoto : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.passportPhoto.startsWith('/') ? '' : '/'}${selectedApplicant.passportPhoto}`} alt="Passport" className="w-16 h-16 rounded-full object-cover border border-white/20" />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-white/5 border border-brand-white/10 flex items-center justify-center">
                     <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -615,7 +678,7 @@ export default function AdminDashboard() {
                           {selectedApplicant.releasedFromClub ? "Yes" : "No"}
                         </span>
                         {selectedApplicant.clubReleaseLetter && (
-                          <a href={`https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                             View
                           </a>
                         )}
@@ -629,7 +692,7 @@ export default function AdminDashboard() {
                         {selectedApplicant.parentConsent ? "Yes" : "No"}
                       </span>
                       {selectedApplicant.consentLetter && (
-                        <a href={`https://horizon-backend-production-4f7a.up.railway.app${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                        <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                           View
                         </a>
                       )}
@@ -663,39 +726,83 @@ export default function AdminDashboard() {
 
               <section className="col-span-1 md:col-span-2">
                 <h3 className="text-xs uppercase tracking-widest text-brand-gold mb-4 pb-2 border-b border-brand-white/10">Registration Payment</h3>
-                <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col">
                     <span className="text-gray-400 mb-2">Status</span>
-                    <span className={selectedApplicant.paymentStatus === 'COMPLETED' ? "text-brand-gold font-medium flex items-center gap-1" : "text-brand-gold font-medium flex items-center gap-1"}>
+                    <span className={selectedApplicant.paymentStatus === 'COMPLETED' ? "text-brand-gold font-medium flex items-center gap-1" : "text-yellow-400 font-medium flex items-center gap-1"}>
                       {selectedApplicant.paymentStatus === 'COMPLETED' ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> : null}
                       {selectedApplicant.paymentStatus}
                     </span>
                   </div>
                   <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col col-span-1 md:col-span-3">
-                    <span className="text-gray-400 mb-2">Payment Reference</span>
-                    <span className="text-white font-mono">{selectedApplicant.paymentRef || 'N/A'}</span>
+                    <span className="text-gray-400 mb-2">Receipt & Actions</span>
+                    <div className="flex items-center gap-4">
+                      {selectedApplicant.registrationReceipt ? (
+                        <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.registrationReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
+                      ) : (
+                        <span className="text-gray-500">No Receipt</span>
+                      )}
+                      {selectedApplicant.paymentStatus !== 'COMPLETED' && (
+                        <button onClick={() => handleApproveRegistration(selectedApplicant.id)} className="bg-brand-gold text-black px-3 py-1 rounded text-xs font-bold uppercase hover:bg-brand-gold/80 transition-colors">Approve</button>
+                      )}
+                    </div>
                   </div>
-                </dl>
+                </div>
               </section>
 
-              {selectedApplicant.playerType === 'ACADEMIC' && selectedApplicant.feeLedger && (
+              {selectedApplicant.playerType === 'ACADEMIC' && (
                 <section className="col-span-1 md:col-span-2">
-                  <h3 className="text-xs uppercase tracking-widest text-brand-gold mb-4 pb-2 border-b border-brand-white/10">Academic Fee Ledger</h3>
+                  <h3 className="text-xs uppercase tracking-widest text-brand-gold mb-4 pb-2 border-b border-brand-white/10">Academy Fee Payment (80%)</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {Object.entries(JSON.parse(selectedApplicant.feeLedger)).map(([key, paid]) => (
-                      <div key={key} className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col">
-                        <span className="text-gray-400 capitalize mb-2">{key}</span>
-                        {paid ? (
-                          <span className="text-brand-gold font-medium flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Paid</span>
+                    <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col">
+                      <span className="text-gray-400 mb-2">Status</span>
+                      <span className={selectedApplicant.academyFeeStatus === 'APPROVED' ? "text-brand-gold font-medium" : selectedApplicant.academyFeeStatus === 'VERIFYING' ? "text-yellow-400 font-medium" : "text-red-400 font-medium"}>
+                        {selectedApplicant.academyFeeStatus || 'PENDING'}
+                      </span>
+                    </div>
+                    <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col col-span-1 md:col-span-3">
+                      <span className="text-gray-400 mb-2">Receipt & Actions</span>
+                      <div className="flex items-center gap-4">
+                        {selectedApplicant.academyFeeReceipt ? (
+                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyFeeReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
                         ) : (
-                          <span className="text-red-400 font-medium">Unpaid</span>
+                          <span className="text-gray-500">No Receipt</span>
+                        )}
+                        {selectedApplicant.academyFeeStatus === 'VERIFYING' && (
+                          <button onClick={() => handleApproveAcademyFee(selectedApplicant.id)} className="bg-brand-gold text-black px-3 py-1 rounded text-xs font-bold uppercase hover:bg-brand-gold/80 transition-colors">Approve 80% Fee</button>
                         )}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </section>
               )}
 
+              {selectedApplicant.playerType === 'ACADEMIC' && selectedApplicant.academyFeeStatus === 'APPROVED' && (
+                <section className="col-span-1 md:col-span-2">
+                  <h3 className="text-xs uppercase tracking-widest text-brand-gold mb-4 pb-2 border-b border-brand-white/10">Academy Balance Payment (20%)</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col">
+                      <span className="text-gray-400 mb-2">Status</span>
+                      <span className={selectedApplicant.academyBalanceStatus === 'COMPLETED' ? "text-brand-gold font-medium" : selectedApplicant.academyBalanceStatus === 'VERIFYING' ? "text-yellow-400 font-medium" : "text-red-400 font-medium"}>
+                        {selectedApplicant.academyBalanceStatus || 'PENDING'}
+                      </span>
+                    </div>
+                    <div className="bg-white/5 p-3 rounded-xl border border-brand-white/10 flex flex-col col-span-1 md:col-span-3">
+                      <span className="text-gray-400 mb-2">Receipt & Actions</span>
+                      <div className="flex items-center gap-4">
+                        {selectedApplicant.academyBalanceReceipt ? (
+                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyBalanceReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
+                        ) : (
+                          <span className="text-gray-500">No Receipt</span>
+                        )}
+                        {selectedApplicant.academyBalanceStatus === 'VERIFYING' && (
+                          <button onClick={() => handleApproveAcademyBalance(selectedApplicant.id)} className="bg-brand-gold text-black px-3 py-1 rounded text-xs font-bold uppercase hover:bg-brand-gold/80 transition-colors">Approve Balance</button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
             </div>
 
             {/* Squad Management UI */}

@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Applicant {
@@ -48,7 +49,13 @@ model Applicant {
 
   paymentStatus   String   @default("PENDING") // PENDING, COMPLETED, FAILED
   paymentRef      String?
+  registrationReceipt String?
   
+  academyFeeReceipt String?
+  academyFeeStatus  String   @default("PENDING") // PENDING, VERIFYING, APPROVED
+  academyBalanceReceipt String?
+  academyBalanceStatus String   @default("PENDING") // PENDING, VERIFYING, APPROVED
+
   applicationStatus String @default("PENDING") // PENDING, APPROVED, REJECTED, OFFICIAL_SQUAD, TRIAL_FAILED
 
   playerType        String   @default("ACADEMIC") // ACADEMIC, SCHOLARSHIP

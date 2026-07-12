@@ -9,6 +9,17 @@ const { sendRegistrationEmail, sendApprovalEmail, sendRejectionEmail, sendForgot
 const { sendWhatsAppDocument, sendAdminNotification, sendWhatsAppText } = require('./services/whatsappService');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const passportDir = path.join(__dirname, 'uploads', 'passports');
+const receiptDir = path.join(__dirname, 'uploads', 'receipts');
+
+if (!fs.existsSync(passportDir)) {
+  fs.mkdirSync(passportDir, { recursive: true });
+}
+if (!fs.existsSync(receiptDir)) {
+  fs.mkdirSync(receiptDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -20,6 +31,17 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+
+const receiptStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/receipts/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'receipt-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const uploadReceipt = multer({ storage: receiptStorage });
 
 const prisma = new PrismaClient();
 const app = express();
@@ -48,10 +70,13 @@ app.post('/api/auth/unified/login', async (req, res) => {
       }
     } 
     
-    // If not an admin (or not an email), check if it's a Player (Registration ID only)
+    // If not an admin, check if it's a Player by Registration ID or Email
     const applicant = await prisma.applicant.findFirst({
       where: {
-        regno: identifier
+        OR: [
+          { regno: identifier },
+          { email: identifier }
+        ]
       }
     });
 
@@ -301,7 +326,8 @@ const generateRegNo = () => {
 app.post('/api/applicants', upload.fields([
   { name: 'passportPhoto', maxCount: 1 },
   { name: 'consentLetter', maxCount: 1 },
-  { name: 'clubReleaseLetter', maxCount: 1 }
+  { name: 'clubReleaseLetter', maxCount: 1 },
+  { name: 'registrationReceipt', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const data = req.body;
@@ -361,12 +387,13 @@ app.post('/api/applicants', upload.fields([
         passportPhoto: req.files?.['passportPhoto']?.[0] ? `/uploads/passports/${req.files['passportPhoto'][0].filename}` : null,
         consentLetter: req.files?.['consentLetter']?.[0] ? `/uploads/passports/${req.files['consentLetter'][0].filename}` : null,
         clubReleaseLetter: req.files?.['clubReleaseLetter']?.[0] ? `/uploads/passports/${req.files['clubReleaseLetter'][0].filename}` : null,
+        registrationReceipt: req.files?.['registrationReceipt']?.[0] ? `/uploads/passports/${req.files['registrationReceipt'][0].filename}` : null,
         releasedFromClub: data.releasedFromClub === 'on' || data.releasedFromClub === true || data.releasedFromClub === 'true',
         hasHealthIssues: data.hasHealthIssues === 'on' || data.hasHealthIssues === true || data.hasHealthIssues === 'true',
         parentConsent: data.parentConsent === 'on' || data.parentConsent === true || data.parentConsent === 'true',
         feeLedger: data.playerType === 'ACADEMIC' ? JSON.stringify({ school: false, jersey: false, accommodation: false, feeding: false }) : null,
         
-        paymentStatus: data.paymentRef ? 'COMPLETED' : 'PENDING',
+        paymentStatus: 'PENDING',
         paymentRef: data.paymentRef || null
       }
     });
@@ -437,8 +464,19 @@ app.get('/api/admin/applicants', requireAdmin, async (req, res) => {
     const pending = applicants.filter(a => a.applicationStatus === 'PENDING').length;
     const rejected = applicants.filter(a => a.applicationStatus === 'REJECTED').length;
     
-    // For a real dashboard, revenue calculation (if needed) can also go here.
-    const revenue = applicants.filter(a => a.paymentStatus === 'COMPLETED').length * 10500;
+    // Dynamically calculate revenue based on current fees
+    const fees = await prisma.fee.findMany();
+    const regFee = fees.find(f => f.category === 'REGISTRATION')?.amount || 15000;
+    const totalAcademyFee = fees.filter(f => f.category === 'ACADEMIC').reduce((sum, f) => sum + f.amount, 0) || 390000;
+    const initialDeposit = totalAcademyFee * 0.8;
+    const balanceFee = totalAcademyFee * 0.2;
+
+    let revenue = 0;
+    applicants.forEach(a => {
+      if (a.paymentStatus === 'COMPLETED') revenue += regFee;
+      if (a.academyFeeStatus === 'APPROVED') revenue += initialDeposit;
+      if (a.balanceFeeStatus === 'APPROVED') revenue += balanceFee;
+    });
 
     res.json({
       analytics: { total, approved, pending, rejected, revenue },
@@ -934,6 +972,107 @@ app.delete('/api/admin/events/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     await prisma.event.delete({ where: { id } });
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ADMIN APPROVE REGISTRATION PAYMENT ---
+app.post('/api/admin/applicants/:id/approve-registration', requireAdmin, async (req, res) => {
+  try {
+    const updated = await prisma.applicant.update({
+      where: { id: req.params.id },
+      data: { paymentStatus: 'COMPLETED' }
+    });
+
+    // Generate Official PDF Receipt
+    try {
+      const pdfBuffer = await generateReceiptPDF(updated);
+      
+      // Fire PDF receipt to WhatsApp
+      if (updated.mobile) {
+        await sendWhatsAppDocument(
+          updated.mobile, 
+          pdfBuffer, 
+          "Your official Horizon United Registration Receipt is attached. Keep it safe!", 
+          `Receipt_${updated.regno}.pdf`
+        );
+      }
+      
+      // Fire PDF receipt to Email
+      if (updated.email) {
+        await sendRegistrationEmail(updated, pdfBuffer);
+      }
+    } catch (notifyErr) {
+      console.error("Failed to generate or send PDF receipt:", notifyErr);
+      // We don't throw here because the approval was successful
+    }
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ADMIN APPROVE ACADEMY FEE PAYMENT ---
+app.post('/api/admin/applicants/:id/approve-academy-fee', requireAdmin, async (req, res) => {
+  try {
+    const updated = await prisma.applicant.update({
+      where: { id: req.params.id },
+      data: { academyFeeStatus: 'APPROVED' }
+    });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ADMIN APPROVE ACADEMY BALANCE PAYMENT ---
+app.post('/api/admin/applicants/:id/approve-academy-balance', requireAdmin, async (req, res) => {
+  try {
+    const updated = await prisma.applicant.update({
+      where: { id: req.params.id },
+      data: { academyBalanceStatus: 'COMPLETED' }
+    });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- PLAYER UPLOAD ACADEMY FEE RECEIPT ---
+app.post('/api/player/academy-fee', requirePlayer, uploadReceipt.single('academyFeeReceipt'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No receipt uploaded' });
+    const receiptUrl = `/uploads/receipts/${req.file.filename}`;
+    
+    const updated = await prisma.applicant.update({
+      where: { id: req.user.id },
+      data: {
+        academyFeeReceipt: receiptUrl,
+        academyFeeStatus: 'VERIFYING'
+      }
+    });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- PLAYER UPLOAD ACADEMY BALANCE RECEIPT ---
+app.post('/api/player/academy-balance', requirePlayer, uploadReceipt.single('academyBalanceReceipt'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No receipt uploaded' });
+    const receiptUrl = `/uploads/receipts/${req.file.filename}`;
+    
+    const updated = await prisma.applicant.update({
+      where: { id: req.user.id },
+      data: {
+        academyBalanceReceipt: receiptUrl,
+        academyBalanceStatus: 'VERIFYING'
+      }
+    });
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

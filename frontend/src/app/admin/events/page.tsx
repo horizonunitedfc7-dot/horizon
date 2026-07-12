@@ -53,7 +53,7 @@ export default function AdminEventsPage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/events");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/events`);
       const data = await res.json();
       setEvents(data);
     } catch (err) {
@@ -108,8 +108,8 @@ export default function AdminEventsPage() {
     const token = localStorage.getItem("adminToken");
     
     const url = editingId 
-      ? `https://horizon-backend-production-4f7a.up.railway.app/api/admin/events/${editingId}`
-      : `https://horizon-backend-production-4f7a.up.railway.app/api/admin/events`;
+      ? `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/events/${editingId}`
+      : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/events`;
       
     const method = editingId ? "PUT" : "POST";
 
@@ -152,7 +152,7 @@ export default function AdminEventsPage() {
     if (!confirm("Are you sure you want to delete this event?")) return;
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/admin/events/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/admin/events/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

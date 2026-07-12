@@ -26,7 +26,7 @@ export default function AdminFees() {
 
   const fetchFees = async () => {
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees`);
       const data = await res.json();
       setFees(data);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function AdminFees() {
     e.preventDefault();
     const token = localStorage.getItem("adminToken");
     const method = editingFee ? "PUT" : "POST";
-    const url = editingFee ? `https://horizon-backend-production-4f7a.up.railway.app/api/fees/${editingFee.id}` : `https://horizon-backend-production-4f7a.up.railway.app/api/fees`;
+    const url = editingFee ? `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees/${editingFee.id}` : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees`;
 
     try {
       const res = await fetch(url, {
@@ -92,7 +92,7 @@ export default function AdminFees() {
     const token = localStorage.getItem("adminToken");
     
     try {
-      const res = await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/fees/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

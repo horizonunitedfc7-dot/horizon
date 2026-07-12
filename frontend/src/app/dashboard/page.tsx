@@ -24,6 +24,8 @@ type PlayerData = {
   scoutRatings?: string;
   privateSchedule?: string;
   coachNotes?: string;
+  academyFeeStatus?: 'PENDING' | 'VERIFYING' | 'APPROVED';
+  academyBalanceStatus?: 'PENDING' | 'VERIFYING' | 'COMPLETED';
 };
 
 
@@ -35,9 +37,10 @@ export default function PlayerDashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
-  const [cart, setCart] = useState<Record<string, number>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "error">("success");
+  const [toastType, setToastType] = useState<'success'|'error'>('success');
+  const [feeReceiptName, setFeeReceiptName] = useState('');
+  const [balanceReceiptName, setBalanceReceiptName] = useState('');
   const router = useRouter();
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -56,9 +59,9 @@ export default function PlayerDashboard() {
 
       try {
         const [playerRes, feesRes, msgsRes] = await Promise.all([
-          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/me", { headers: { "Authorization": `Bearer ${token}` } }),
-          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/fees"),
-          fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/messages", { headers: { "Authorization": `Bearer ${token}` } })
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/me`, { headers: { "Authorization": `Bearer ${token}` } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/messages`, { headers: { "Authorization": `Bearer ${token}` } })
         ]);
 
         if (!playerRes.ok) {
@@ -86,7 +89,7 @@ export default function PlayerDashboard() {
   const markMessageAsRead = async (id: string) => {
     const token = localStorage.getItem("playerToken");
     try {
-      await fetch(`https://horizon-backend-production-4f7a.up.railway.app/api/player/messages/${id}/read`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/messages/${id}/read`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -103,7 +106,7 @@ export default function PlayerDashboard() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/player/me", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/me`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData,
@@ -124,59 +127,59 @@ export default function PlayerDashboard() {
     }
   };
 
-  const handleCartCheckout = () => {
-    if (!player) return;
+  const handleAcademyFeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving(true);
+    const token = localStorage.getItem("playerToken");
+    const formData = new FormData(e.currentTarget);
 
-    const totalAmount = Object.entries(cart).reduce((sum, [key, qty]) => {
-      const feeItem = fees.find(f => f.key === key);
-      return sum + (feeItem ? feeItem.amount * qty : 0);
-    }, 0);
-
-    if (totalAmount <= 0) return;
-
-    // @ts-ignore
-    if (typeof window !== "undefined" && window.FlutterwaveCheckout) {
-      // @ts-ignore
-      window.FlutterwaveCheckout({
-        public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || "FLWPUBK_TEST-dummy-key",
-        tx_ref: `${player.regno}_cart_${Date.now()}`,
-        amount: totalAmount, 
-        currency: "NGN",
-        payment_options: "card,mobilemoney,ussd",
-        customer: {
-          email: player.email || "user@example.com",
-          phone_number: player.mobile || "",
-          name: `${player.firstname} ${player.lastname}`,
-        },
-        customizations: {
-          title: "Horizon United FC",
-          description: `Academy Fees Payment`,
-          logo: "https://i.imgur.com/vH0zY7X.png",
-        },
-        callback: async (response: any) => {
-          if (response.status === "successful" || response.status === "completed") {
-            try {
-              const token = localStorage.getItem("playerToken");
-              const res = await fetch("https://horizon-backend-production-4f7a.up.railway.app/api/payments/verify", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ transaction_id: response.transaction_id, paidItems: cart })
-              });
-              if (res.ok) {
-                const { applicant } = await res.json();
-                setPlayer(applicant);
-                setCart({});
-                showToast("Payment verified! Dashboard updated.", "success");
-              } else {
-                showToast("Payment verified but failed to update. Contact admin.", "error");
-              }
-            } catch (err) {
-              console.error(err);
-              showToast("Payment verification error.", "error");
-            }
-          }
-        },
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/academy-fee`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData,
       });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPlayer(prev => prev ? { ...prev, academyFeeStatus: 'VERIFYING' } : null);
+        showToast("Receipt uploaded! Awaiting verification.", "success");
+      } else {
+        const errData = await res.json();
+        showToast(`Failed: ${errData.error}`, "error");
+      }
+    } catch (error) {
+      showToast("Error uploading receipt.", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAcademyBalanceSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving(true);
+    const token = localStorage.getItem("playerToken");
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/player/academy-balance`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPlayer(prev => prev ? { ...prev, academyBalanceStatus: 'VERIFYING' } : null);
+        showToast("Balance receipt uploaded! Awaiting verification.", "success");
+      } else {
+        const errData = await res.json();
+        showToast(`Failed: ${errData.error}`, "error");
+      }
+    } catch (error) {
+      showToast("Error uploading balance receipt.", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -240,7 +243,7 @@ export default function PlayerDashboard() {
               
               <div className="w-32 h-32 rounded-full border-4 border-brand-gold p-1 mb-6 relative z-10 bg-black">
                 {player.passportPhoto ? (
-                  <img src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${player.passportPhoto}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  <img src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${player.passportPhoto}`} alt="Profile" className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <div className="w-full h-full rounded-full bg-brand-white/5 flex items-center justify-center text-gray-400 font-oswald text-4xl">
                     {player.firstname[0]}{player.lastname[0]}
@@ -481,10 +484,9 @@ export default function PlayerDashboard() {
   }
 
 
-  const ledger = player.feeLedger ? JSON.parse(player.feeLedger) : {};
   const academicFees = fees.filter(f => f.category === 'ACADEMIC');
-  
-  const isFullyPaid = academicFees.length > 0 && academicFees.every(f => ledger[f.key]);
+  const totalAcademicFee = academicFees.reduce((sum, f) => sum + f.amount, 0) || 390000;
+  const initialDeposit = totalAcademicFee * 0.8;
   
   const feeImages: Record<string, string> = {
     school: '/fee_school.png',
@@ -493,10 +495,6 @@ export default function PlayerDashboard() {
     feeding: '/fee_feeding.png',
   };
 
-  const cartTotal = Object.entries(cart).reduce((sum, [key, qty]) => {
-    const feeItem = fees.find(f => f.key === key);
-    return sum + (feeItem ? feeItem.amount * qty : 0);
-  }, 0);
 
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-white font-sans overflow-x-hidden pt-24 pb-32 px-4 md:px-8 relative">
@@ -556,7 +554,7 @@ export default function PlayerDashboard() {
                 <div className="w-48 h-48 md:w-64 md:h-64 mt-16 md:mt-24 mb-8 relative flex items-end justify-center overflow-hidden">
                   {player.passportPhoto ? (
                     <img 
-                      src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `https://horizon-backend-production-4f7a.up.railway.app${player.passportPhoto.startsWith('/') ? '' : '/'}${player.passportPhoto}`} 
+                      src={player.passportPhoto.startsWith('http') ? player.passportPhoto : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${player.passportPhoto.startsWith('/') ? '' : '/'}${player.passportPhoto}`} 
                       alt="Passport" 
                       className="w-full h-full object-cover object-top drop-shadow-2xl grayscale hover:grayscale-0 transition-all duration-500" 
                       style={{ WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 20%)' }} 
@@ -644,7 +642,7 @@ export default function PlayerDashboard() {
             </button>
           </section>
         ) : player.playerType === 'ACADEMIC' ? (
-          isFullyPaid ? (
+          player.academyFeeStatus === 'APPROVED' ? (
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-[translateY_0.5s_ease-out]">
               <div className="p-2 rounded-[2.5rem] bg-brand-gold/[0.02] border border-brand-gold/10 shadow-2xl backdrop-blur-xl">
                 <div className="h-full bg-brand-black rounded-[calc(2.5rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] p-10">
@@ -675,73 +673,159 @@ export default function PlayerDashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* Balance Payment Card */}
+              <div className="p-2 rounded-[2.5rem] bg-brand-black/[0.02] border border-brand-white/10 shadow-2xl backdrop-blur-xl md:col-span-2">
+                <div className="h-full bg-brand-black rounded-[calc(2.5rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] p-10 flex flex-col items-center text-center">
+                  <h2 className="text-2xl font-medium mb-4">Academy Fee Balance (20%)</h2>
+                  
+                  {player.academyBalanceStatus === 'COMPLETED' ? (
+                    <div className="mt-4 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mb-4">
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <p className="text-green-400 font-bold text-xl tracking-widest uppercase">100% Fully Paid</p>
+                    </div>
+                  ) : player.academyBalanceStatus === 'VERIFYING' ? (
+                    <div className="mt-4 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center mb-4 animate-pulse">
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </div>
+                      <p className="text-yellow-400 font-bold text-lg">Balance receipt is being verified by Admin</p>
+                    </div>
+                  ) : (
+                    <div className="mt-2 w-full max-w-lg mx-auto">
+                      <p className="text-gray-400 leading-relaxed mb-6">
+                        You have an outstanding balance of 20% for your Academy Fees. Please pay the remaining balance to complete your financial clearance.
+                      </p>
+                      <div className="bg-white/5 p-6 rounded-2xl border border-white/10 mb-6 flex flex-col sm:flex-row items-center justify-between">
+                        <div className="text-left mb-4 sm:mb-0">
+                          <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Outstanding Balance</div>
+                          <div className="text-3xl font-oswald font-bold text-brand-gold">&#8358;{(totalAcademicFee * 0.2).toLocaleString()}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">UBA Account</div>
+                          <div className="font-mono text-white">1030851781</div>
+                          <div className="text-xs text-gray-400">Horizon United FC LTD</div>
+                        </div>
+                      </div>
+                      <form onSubmit={handleAcademyBalanceSubmit} className="space-y-4">
+                        <div className="relative group cursor-pointer text-left">
+                          <label className="block text-sm font-medium text-white mb-2">Upload Balance Receipt</label>
+                          <input type="file" name="academyBalanceReceipt" accept="image/*,.pdf" required className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer mt-6" onChange={(e) => setBalanceReceiptName(e.target.files?.[0]?.name || '')} />
+                          <div className="bg-black/20 border border-white/10 border-dashed rounded-xl p-4 flex items-center justify-center gap-3 group-hover:border-brand-gold/50 transition-colors">
+                            <svg className="w-6 h-6 text-brand-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                            <span className="text-sm text-gray-400">{balanceReceiptName || "Choose file to upload"}</span>
+                          </div>
+                        </div>
+                        <button type="submit" disabled={isSaving} className="w-full bg-brand-gold text-black font-bold uppercase tracking-widest py-3 rounded-xl hover:bg-brand-gold/90 transition-colors disabled:opacity-50">
+                          {isSaving ? "Uploading..." : "Submit Balance Receipt"}
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </section>
+          ) : player.academyFeeStatus === 'VERIFYING' ? (
+            <section className="animate-[translateY_0.5s_ease-out] max-w-2xl mx-auto">
+              <div className="bg-brand-black border border-brand-white/10 rounded-3xl p-10 text-center shadow-2xl">
+                <div className="w-20 h-20 bg-brand-gold/10 text-brand-gold rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-oswald font-black uppercase tracking-widest mb-4 text-white">Payment Verifying</h2>
+                <p className="text-gray-400 leading-relaxed text-lg">
+                  Your Academy Fee receipt has been successfully uploaded and is currently being verified by an Admin. Please check back later.
+                </p>
+              </div>
             </section>
           ) : (
             <section className="animate-[translateY_0.5s_ease-out]">
-              <h2 className="text-3xl font-oswald font-black uppercase tracking-widest mb-2 text-white">Academy Store</h2>
-              <p className="text-gray-400 mb-8 max-w-2xl">Complete your registration by paying for the required academy items. All items are mandatory for your enrollment.</p>
+              <h2 className="text-3xl font-oswald font-black uppercase tracking-widest mb-2 text-white">Academy Fees</h2>
+              <p className="text-gray-400 mb-8 max-w-2xl">Complete your registration by paying the required 80% initial academy deposit.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                {academicFees.length === 0 ? (
-                  <div className="col-span-full p-10 text-center text-gray-500 font-medium bg-brand-black border border-brand-white/10 rounded-2xl">No fees assigned currently.</div>
-                ) : academicFees.map((fee) => (
-                  <div key={fee.key} className="bg-brand-black border border-brand-white/10 rounded-2xl overflow-hidden shadow-xl flex flex-col transition-transform hover:scale-[1.02]">
-                    <div className="aspect-[4/3] w-full bg-[#111] relative">
-                      <img src={feeImages[fee.key] || '/logo.png'} alt={fee.title} className="w-full h-full object-cover opacity-80 mix-blend-screen" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-black to-transparent" />
-                      {ledger[fee.key] && (
-                        <div className="absolute top-3 right-3 bg-brand-gold text-black text-[10px] font-bold uppercase px-3 py-1 rounded-sm shadow-lg">
-                          Paid
+              <div className="bg-brand-black border border-brand-white/10 rounded-3xl p-8 w-full shadow-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+                    <div className="text-sm text-gray-500 uppercase tracking-widest mb-2">Total Fees</div>
+                    <div className="text-2xl font-oswald font-bold text-white">&#8358;{totalAcademicFee.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-brand-gold/10 p-6 rounded-2xl border border-brand-gold/20">
+                    <div className="text-sm text-brand-gold/80 uppercase tracking-widest mb-2">Required First Payment (80%)</div>
+                    <div className="text-3xl font-oswald font-bold text-brand-gold">&#8358;{initialDeposit.toLocaleString()}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  {/* Fee Breakdown (Shopping Cart) */}
+                  <div className="bg-black/50 border border-brand-white/10 rounded-2xl p-6">
+                    <h4 className="text-lg font-bold text-white mb-4">Fee Breakdown</h4>
+                    <div className="space-y-3">
+                      {fees.filter((f: any) => f.category === 'ACADEMIC').map((fee: any) => (
+                        <div key={fee.id || fee.key} className="flex justify-between items-center text-sm">
+                          <span className="text-gray-400 uppercase tracking-wider">{fee.title}</span>
+                          <span className="font-mono text-white">&#8358;{fee.amount.toLocaleString()}</span>
                         </div>
-                      )}
-                    </div>
-                    <div className="p-6 flex flex-col flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2">{fee.title}</h3>
-                      <div className="text-xl font-mono text-brand-gold mb-6 tracking-tight">&#8358;{fee.amount.toLocaleString()}</div>
-                      
-                      <div className="mt-auto">
-                        {ledger[fee.key] ? (
-                          <div className="w-full text-center py-3 rounded-xl bg-brand-white/5 border border-brand-white/10 text-brand-white/50 text-sm font-bold uppercase tracking-widest">
-                            Completed
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between bg-[#111] rounded-xl border border-brand-white/10 p-1">
-                            <button 
-                              onClick={() => setCart(prev => ({ ...prev, [fee.key]: Math.max(0, (prev[fee.key] || 0) - 1) }))}
-                              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                            >
-                              -
-                            </button>
-                            <span className="font-mono text-lg">{cart[fee.key] || 0}</span>
-                            <button 
-                              onClick={() => setCart(prev => ({ ...prev, [fee.key]: fee.key !== 'jersey' ? Math.min(1, (prev[fee.key] || 0) + 1) : (prev[fee.key] || 0) + 1 }))}
-                              className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                            >
-                              +
-                            </button>
-                          </div>
-                        )}
+                      ))}
+                      <div className="pt-3 mt-2 border-t border-white/10 flex justify-between items-center text-sm">
+                        <span className="text-gray-300 uppercase tracking-wider">Total</span>
+                        <span className="font-mono text-white">&#8358;{totalAcademicFee.toLocaleString()}</span>
+                      </div>
+                      <div className="pt-2 flex justify-between items-center font-bold">
+                        <span className="text-brand-gold uppercase tracking-wider">Required First Payment (80%)</span>
+                        <span className="font-mono text-brand-gold text-lg">&#8358;{initialDeposit.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Cart Summary Floating Bar */}
-              {cartTotal > 0 && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-brand-gold text-black p-4 rounded-2xl shadow-[0_20px_50px_rgba(255,215,0,0.2)] flex items-center justify-between z-50 animate-[translateY_0.3s_ease-out]">
+                <div className="bg-black/50 border border-brand-white/10 rounded-2xl p-6 mb-8">
+                  <h4 className="text-lg font-bold text-white mb-4">Bank Transfer Details</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Bank</div>
+                      <div className="font-semibold text-white">UBA</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Amount</div>
+                      <div className="font-mono font-bold text-brand-gold text-lg">&#8358;{initialDeposit.toLocaleString()}</div>
+                    </div>
+                    <div className="col-span-1 sm:col-span-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Account Name</div>
+                      <div className="font-semibold text-white">Horizon United FC LTD</div>
+                    </div>
+                    <div className="col-span-1 sm:col-span-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Account Number</div>
+                      <div className="font-mono font-bold text-white text-xl tracking-wider">1030851781</div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+
+                <form onSubmit={handleAcademyFeeSubmit} className="space-y-6">
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-widest opacity-70">Total Due</div>
-                    <div className="text-2xl font-black font-oswald">&#8358;{cartTotal.toLocaleString()}</div>
+                    <label className="block text-sm font-medium text-white mb-2">Upload Payment Receipt (Image/PDF)</label>
+                    <div className="relative group cursor-pointer">
+                      <input type="file" name="academyFeeReceipt" accept="image/*,.pdf" required className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer" onChange={(e) => setFeeReceiptName(e.target.files?.[0]?.name || '')} />
+                      <div className="bg-black/20 border border-white/10 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-3 group-hover:border-brand-gold/50 transition-colors">
+                        <svg className="w-8 h-8 text-brand-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span className="text-sm text-gray-400 group-hover:text-gray-300">{feeReceiptName || "Choose file or drag & drop"}</span>
+                      </div>
+                    </div>
                   </div>
                   <button 
-                    onClick={handleCartCheckout}
-                    className="bg-black text-brand-gold px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-sm hover:scale-105 transition-transform"
+                    type="submit" 
+                    disabled={isSaving}
+                    className="w-full bg-brand-gold text-black font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-brand-gold/90 transition-colors disabled:opacity-50"
                   >
-                    Pay Total Amount
+                    {isSaving ? "Uploading..." : "Submit Receipt for Verification"}
                   </button>
-                </div>
-              )}
+                </form>
+              </div>
             </section>
           )
         ) : (

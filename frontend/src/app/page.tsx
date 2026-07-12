@@ -65,7 +65,7 @@ export default function LandingPage() {
 
     const fetchFee = async () => {
       try {
-        const res = await fetch('https://horizon-backend-production-4f7a.up.railway.app/api/fees');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/fees`);
         const data = await res.json();
         const coreFee = data.find((f: any) => f.key === 'registration');
         if (coreFee) setRegistrationFee(coreFee.amount);
@@ -76,7 +76,7 @@ export default function LandingPage() {
     
     const fetchEvents = async () => {
       try {
-        const res = await fetch('https://horizon-backend-production-4f7a.up.railway.app/api/events');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}/api/events`);
         const data = await res.json();
         setEvents(data);
       } catch (err) {
@@ -479,7 +479,7 @@ export default function LandingPage() {
               if (evt.isPoster) {
                 return (
                   <div key={evt.id} className="relative border border-gray-200 overflow-hidden shadow-2xl group rounded-xl">
-                    <img src={evt.image ? (evt.image.startsWith('http') ? evt.image : `https://horizon-backend-production-4f7a.up.railway.app${evt.image}`) : "/scouting_poster.png"} alt={evt.title} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700 group-hover:scale-105" />
+                    <img src={evt.image ? (evt.image.startsWith('http') ? evt.image : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${evt.image}`) : "/scouting_poster.png"} alt={evt.title} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent" />
                     <div className="absolute inset-0 p-8 flex flex-col justify-end">
                       <h3 className="text-4xl font-oswald font-black text-white tracking-widest uppercase mb-2" dangerouslySetInnerHTML={{ __html: evt.title.replace(' ', '<br/>') }}></h3>
@@ -496,7 +496,7 @@ export default function LandingPage() {
                 <div key={evt.id} className="bg-white border border-gray-200 overflow-hidden shadow-xl group hover:border-brand-gold/50 transition-colors flex flex-col relative rounded-xl">
                   <div className="h-40 relative w-full overflow-hidden border-b border-gray-100">
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 to-transparent z-10" />
-                    <img src={evt.image ? (evt.image.startsWith('http') ? evt.image : `https://horizon-backend-production-4f7a.up.railway.app${evt.image}`) : "/hero_stadium.png"} alt={evt.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
+                    <img src={evt.image ? (evt.image.startsWith('http') ? evt.image : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${evt.image}`) : "/hero_stadium.png"} alt={evt.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
                     <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1 bg-brand-gold text-brand-black text-xs font-bold uppercase tracking-wider shadow-lg rounded-sm">
                       {evt.location.split(' ')[0]}
                     </div>
