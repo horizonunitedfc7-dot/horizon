@@ -995,14 +995,13 @@ app.post('/api/admin/applicants/:id/approve-registration', requireAdmin, async (
         await sendWhatsAppDocument(
           updated.mobile, 
           pdfBuffer, 
-          "Your official Horizon United Registration Receipt is attached. Keep it safe!", 
+          "Congratulations! Your Horizon United Application is APPROVED! We have attached your official receipt again for your records.", 
           `Receipt_${updated.regno}.pdf`
         );
       }
       
-      // Fire PDF receipt to Email
       if (updated.email) {
-        await sendRegistrationEmail(updated, pdfBuffer);
+        await sendApprovalEmail(updated);
       }
     } catch (notifyErr) {
       console.error("Failed to generate or send PDF receipt:", notifyErr);
