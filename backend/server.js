@@ -10,35 +10,29 @@ const { sendWhatsAppDocument, sendAdminNotification, sendWhatsAppText } = requir
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const passportDir = path.join(__dirname, 'uploads', 'passports');
-const receiptDir = path.join(__dirname, 'uploads', 'receipts');
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-if (!fs.existsSync(passportDir)) {
-  fs.mkdirSync(passportDir, { recursive: true });
-}
-if (!fs.existsSync(receiptDir)) {
-  fs.mkdirSync(receiptDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/passports/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'horizon_uploads/passports',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf']
   }
 });
 const upload = multer({ storage: storage });
 
-const receiptStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/receipts/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'receipt-' + uniqueSuffix + path.extname(file.originalname));
+const receiptStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'horizon_uploads/receipts',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf']
   }
 });
 const uploadReceipt = multer({ storage: receiptStorage });
@@ -204,13 +198,13 @@ app.put('/api/player/me', requirePlayer, upload.fields([
     };
 
     if (req.files?.['passportPhoto']?.[0]) {
-      updateData.passportPhoto = `/uploads/passports/${req.files['passportPhoto'][0].filename}`;
+      updateData.passportPhoto = req.files['passportPhoto'][0].path;
     }
     if (req.files?.['consentLetter']?.[0]) {
-      updateData.consentLetter = `/uploads/passports/${req.files['consentLetter'][0].filename}`;
+      updateData.consentLetter = req.files['consentLetter'][0].path;
     }
     if (req.files?.['clubReleaseLetter']?.[0]) {
-      updateData.clubReleaseLetter = `/uploads/passports/${req.files['clubReleaseLetter'][0].filename}`;
+      updateData.clubReleaseLetter = req.files['clubReleaseLetter'][0].path;
     }
 
     // If application was rejected, editing should put it back to PENDING
@@ -384,10 +378,10 @@ app.post('/api/applicants', upload.fields([
 
         playerType: data.playerType || 'ACADEMIC',
         password: data.password ? await bcrypt.hash(data.password, 10) : null,
-        passportPhoto: req.files?.['passportPhoto']?.[0] ? `/uploads/passports/${req.files['passportPhoto'][0].filename}` : null,
-        consentLetter: req.files?.['consentLetter']?.[0] ? `/uploads/passports/${req.files['consentLetter'][0].filename}` : null,
-        clubReleaseLetter: req.files?.['clubReleaseLetter']?.[0] ? `/uploads/passports/${req.files['clubReleaseLetter'][0].filename}` : null,
-        registrationReceipt: req.files?.['registrationReceipt']?.[0] ? `/uploads/passports/${req.files['registrationReceipt'][0].filename}` : null,
+        passportPhoto: req.files?.['passportPhoto']?.[0] ? req.files['passportPhoto'][0].path : null,
+        consentLetter: req.files?.['consentLetter']?.[0] ? req.files['consentLetter'][0].path : null,
+        clubReleaseLetter: req.files?.['clubReleaseLetter']?.[0] ? req.files['clubReleaseLetter'][0].path : null,
+        registrationReceipt: req.files?.['registrationReceipt']?.[0] ? req.files['registrationReceipt'][0].path : null,
         releasedFromClub: data.releasedFromClub === 'on' || data.releasedFromClub === true || data.releasedFromClub === 'true',
         hasHealthIssues: data.hasHealthIssues === 'on' || data.hasHealthIssues === true || data.hasHealthIssues === 'true',
         parentConsent: data.parentConsent === 'on' || data.parentConsent === true || data.parentConsent === 'true',
@@ -919,7 +913,7 @@ app.get('/api/seed', async (req, res) => {
 app.post('/api/admin/events', requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const { title, date, description, location, teamA, teamB, isPoster, ticketLink } = req.body;
-    const imagePath = req.file ? `/uploads/passports/${req.file.filename}` : null;
+    const imagePath = req.file ? req.file.path : null;
     
     const event = await prisma.event.create({
       data: {
@@ -956,7 +950,7 @@ app.put('/api/admin/events/:id', requireAdmin, upload.single('image'), async (re
 
     if (date) updateData.date = new Date(date);
     if (isPoster !== undefined) updateData.isPoster = isPoster === 'true' || isPoster === true;
-    if (req.file) updateData.image = `/uploads/passports/${req.file.filename}`;
+    if (req.file) updateData.image = req.file.path;
 
     const event = await prisma.event.update({
       where: { id },
@@ -1044,7 +1038,7 @@ app.post('/api/admin/applicants/:id/approve-academy-balance', requireAdmin, asyn
 app.post('/api/player/academy-fee', requirePlayer, uploadReceipt.single('academyFeeReceipt'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No receipt uploaded' });
-    const receiptUrl = `/uploads/receipts/${req.file.filename}`;
+    const receiptUrl = req.file.path;
     
     const updated = await prisma.applicant.update({
       where: { id: req.user.id },
@@ -1063,7 +1057,7 @@ app.post('/api/player/academy-fee', requirePlayer, uploadReceipt.single('academy
 app.post('/api/player/academy-balance', requirePlayer, uploadReceipt.single('academyBalanceReceipt'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No receipt uploaded' });
-    const receiptUrl = `/uploads/receipts/${req.file.filename}`;
+    const receiptUrl = req.file.path;
     
     const updated = await prisma.applicant.update({
       where: { id: req.user.id },
