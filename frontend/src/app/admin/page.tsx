@@ -738,7 +738,7 @@ export default function AdminDashboard() {
                     <span className="text-gray-400 mb-2">Receipt & Actions</span>
                     <div className="flex items-center gap-4">
                       {selectedApplicant.registrationReceipt ? (
-                        <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.registrationReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
+                        <a href={selectedApplicant.registrationReceipt.startsWith('http') ? selectedApplicant.registrationReceipt : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.registrationReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
                       ) : (
                         <span className="text-gray-500">No Receipt</span>
                       )}
@@ -764,7 +764,7 @@ export default function AdminDashboard() {
                       <span className="text-gray-400 mb-2">Receipt & Actions</span>
                       <div className="flex items-center gap-4">
                         {selectedApplicant.academyFeeReceipt ? (
-                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyFeeReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
+                          <a href={selectedApplicant.academyFeeReceipt.startsWith('http') ? selectedApplicant.academyFeeReceipt : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyFeeReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
                         ) : (
                           <span className="text-gray-500">No Receipt</span>
                         )}
@@ -791,7 +791,7 @@ export default function AdminDashboard() {
                       <span className="text-gray-400 mb-2">Receipt & Actions</span>
                       <div className="flex items-center gap-4">
                         {selectedApplicant.academyBalanceReceipt ? (
-                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyBalanceReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
+                          <a href={selectedApplicant.academyBalanceReceipt.startsWith('http') ? selectedApplicant.academyBalanceReceipt : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.academyBalanceReceipt}`} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:underline font-medium">View Receipt</a>
                         ) : (
                           <span className="text-gray-500">No Receipt</span>
                         )}
