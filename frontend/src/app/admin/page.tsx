@@ -678,7 +678,7 @@ export default function AdminDashboard() {
                           {selectedApplicant.releasedFromClub ? "Yes" : "No"}
                         </span>
                         {selectedApplicant.clubReleaseLetter && (
-                          <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                          <a href={selectedApplicant.clubReleaseLetter.startsWith('http') ? selectedApplicant.clubReleaseLetter : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.clubReleaseLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                             View
                           </a>
                         )}
@@ -692,7 +692,7 @@ export default function AdminDashboard() {
                         {selectedApplicant.parentConsent ? "Yes" : "No"}
                       </span>
                       {selectedApplicant.consentLetter && (
-                        <a href={`${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
+                        <a href={selectedApplicant.consentLetter.startsWith('http') ? selectedApplicant.consentLetter : `${process.env.NEXT_PUBLIC_API_URL || "https://horizon-backend-production-4f7a.up.railway.app"}${selectedApplicant.consentLetter}`} target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors">
                           View
                         </a>
                       )}

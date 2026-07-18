@@ -21,18 +21,26 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'horizon_uploads/passports',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf']
+  params: async (req, file) => {
+    const ext = file.originalname.split('.').pop();
+    return {
+      folder: 'horizon_uploads/passports',
+      resource_type: 'auto',
+      format: ext
+    };
   }
 });
 const upload = multer({ storage: storage });
 
 const receiptStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'horizon_uploads/receipts',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'pdf']
+  params: async (req, file) => {
+    const ext = file.originalname.split('.').pop();
+    return {
+      folder: 'horizon_uploads/receipts',
+      resource_type: 'auto',
+      format: ext
+    };
   }
 });
 const uploadReceipt = multer({ storage: receiptStorage });
