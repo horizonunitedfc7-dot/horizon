@@ -189,7 +189,8 @@ app.get('/api/player/me', requirePlayer, async (req, res) => {
 app.put('/api/player/me', requirePlayer, upload.fields([
   { name: 'passportPhoto', maxCount: 1 },
   { name: 'consentLetter', maxCount: 1 },
-  { name: 'clubReleaseLetter', maxCount: 1 }
+  { name: 'clubReleaseLetter', maxCount: 1 },
+  { name: 'registrationReceipt', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const data = req.body;
@@ -213,6 +214,9 @@ app.put('/api/player/me', requirePlayer, upload.fields([
     }
     if (req.files?.['clubReleaseLetter']?.[0]) {
       updateData.clubReleaseLetter = req.files['clubReleaseLetter'][0].path;
+    }
+    if (req.files?.['registrationReceipt']?.[0]) {
+      updateData.registrationReceipt = req.files['registrationReceipt'][0].path;
     }
 
     // If application was rejected, editing should put it back to PENDING

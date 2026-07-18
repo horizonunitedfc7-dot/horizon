@@ -194,6 +194,141 @@ export default function PlayerDashboard() {
   // Derive a random but consistent squad number based on player ID length or characters
   const squadNumber = (player.id.charCodeAt(0) % 99) + 1;
 
+  const editProfileModal = isEditing ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-2xl animate-[fadeIn_0.2s_ease-out]">
+      <div className="bg-brand-black border border-brand-white/10 rounded-[2rem] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col transform scale-100 animate-[scaleUp_0.2s_ease-out_forwards]">
+        
+        <div className="px-8 py-6 border-b border-brand-white/10 flex items-center justify-between bg-brand-black z-10">
+          <h2 className="text-2xl font-medium text-white">Edit Profile</h2>
+          <button 
+            onClick={() => setIsEditing(false)}
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="p-8 overflow-y-auto">
+          <form onSubmit={handleEditSubmit} className="space-y-6">
+            
+            {/* Basic Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">First Name</label>
+                <input name="firstname" type="text" defaultValue={player.firstname} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Last Name</label>
+                <input name="lastname" type="text" defaultValue={player.lastname} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Mobile Number</label>
+                {/* @ts-ignore */}
+                <input name="mobile" type="text" defaultValue={player.mobile || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Address</label>
+                {/* @ts-ignore */}
+                <input name="address" type="text" defaultValue={player.address || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
+              </div>
+            </div>
+
+            <div className="h-px w-full bg-white/5 my-4" />
+
+            {/* Athletic Profile */}
+            <h3 className="text-sm font-medium text-white mb-4">Athletic Profile</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Position</label>
+                {/* @ts-ignore */}
+                <select name="position" defaultValue={player.position || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white">
+                  <option value="Goalkeeper">Goalkeeper</option>
+                  <option value="Defender">Defender</option>
+                  <option value="Midfielder">Midfielder</option>
+                  <option value="Forward">Forward</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Strong Foot</label>
+                {/* @ts-ignore */}
+                <select name="foot" defaultValue={player.foot || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white">
+                  <option value="Right">Right</option>
+                  <option value="Left">Left</option>
+                  <option value="Both">Both</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Height</label>
+                {/* @ts-ignore */}
+                <input name="height" type="text" defaultValue={player.height || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Weight</label>
+                {/* @ts-ignore */}
+                <input name="weight" type="text" defaultValue={player.weight || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white" />
+              </div>
+            </div>
+
+            <div className="h-px w-full bg-white/5 my-4" />
+
+            {/* Documents */}
+            <h3 className="text-sm font-medium text-white mb-4">Update Documents (Optional)</h3>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-white">Registration Receipt</p>
+                  <p className="text-xs text-gray-500">Must be an image or PDF</p>
+                </div>
+                <input type="file" name="registrationReceipt" accept="image/*,.pdf" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
+              </div>
+              
+              <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-white">Passport Photo</p>
+                  <p className="text-xs text-gray-500">Must be an image (jpg/png)</p>
+                </div>
+                <input type="file" name="passportPhoto" accept="image/*" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
+              </div>
+              
+              <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-white">Parent Consent Letter</p>
+                  <p className="text-xs text-gray-500">PDF Document</p>
+                </div>
+                <input type="file" name="consentLetter" accept=".pdf" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
+              </div>
+
+              {player.playerType === 'SCHOLARSHIP' && (
+                <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-white">Club Release Letter</p>
+                    <p className="text-xs text-gray-500">PDF Document</p>
+                  </div>
+                  <input type="file" name="clubReleaseLetter" accept=".pdf" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
+                </div>
+              )}
+            </div>
+
+            <div className="pt-6 border-t border-brand-white/10 flex justify-end gap-4">
+              <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-3 rounded-full text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                Cancel
+              </button>
+              <button type="submit" disabled={isSaving} className="px-8 py-3 rounded-full bg-brand-gold hover:bg-brand-gold text-black font-semibold transition-colors disabled:opacity-50 flex items-center gap-2">
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : 'Save Changes'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   if (player.applicationStatus === "OFFICIAL_SQUAD") {
     let scoutRatings = { pace: 50, shooting: 50, passing: 50, physicality: 50 };
     try { if (player.scoutRatings) scoutRatings = JSON.parse(player.scoutRatings); } catch(e){}
@@ -279,6 +414,10 @@ export default function PlayerDashboard() {
 
               <button onClick={() => window.print()} className="w-full py-3 border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-black font-bold uppercase tracking-widest rounded-xl transition-all duration-300">
                 Download ID Card
+              </button>
+              
+              <button onClick={() => setIsEditing(true)} className="w-full mt-3 py-3 border border-white/20 text-white hover:bg-white hover:text-black font-bold uppercase tracking-widest rounded-xl transition-all duration-300">
+                Edit Profile & Documents
               </button>
             </div>
             
@@ -390,6 +529,7 @@ export default function PlayerDashboard() {
           </div>
         )}
 
+        {editProfileModal}
       </div>
     );
   }
@@ -874,133 +1014,7 @@ export default function PlayerDashboard() {
 
       </div>
 
-      {/* Edit Profile Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-2xl animate-[fadeIn_0.2s_ease-out]">
-          <div className="bg-brand-black border border-brand-white/10 rounded-[2rem] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col transform scale-100 animate-[scaleUp_0.2s_ease-out_forwards]">
-            
-            <div className="px-8 py-6 border-b border-brand-white/10 flex items-center justify-between bg-brand-black z-10">
-              <h2 className="text-2xl font-medium text-white">Edit Profile</h2>
-              <button 
-                onClick={() => setIsEditing(false)}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-
-            <div className="p-8 overflow-y-auto">
-              <form onSubmit={handleEditSubmit} className="space-y-6">
-                
-                {/* Basic Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">First Name</label>
-                    <input name="firstname" type="text" defaultValue={player.firstname} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Last Name</label>
-                    <input name="lastname" type="text" defaultValue={player.lastname} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Mobile Number</label>
-                    {/* @ts-ignore */}
-                    <input name="mobile" type="text" defaultValue={player.mobile || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Address</label>
-                    {/* @ts-ignore */}
-                    <input name="address" type="text" defaultValue={player.address || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white focus:border-white/30 transition-colors" />
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-white/5 my-4" />
-
-                {/* Athletic Profile */}
-                <h3 className="text-sm font-medium text-white mb-4">Athletic Profile</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Position</label>
-                    {/* @ts-ignore */}
-                    <select name="position" defaultValue={player.position || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white">
-                      <option value="Goalkeeper">Goalkeeper</option>
-                      <option value="Defender">Defender</option>
-                      <option value="Midfielder">Midfielder</option>
-                      <option value="Forward">Forward</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Strong Foot</label>
-                    {/* @ts-ignore */}
-                    <select name="foot" defaultValue={player.foot || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white">
-                      <option value="Right">Right</option>
-                      <option value="Left">Left</option>
-                      <option value="Both">Both</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Height</label>
-                    {/* @ts-ignore */}
-                    <input name="height" type="text" defaultValue={player.height || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Weight</label>
-                    {/* @ts-ignore */}
-                    <input name="weight" type="text" defaultValue={player.weight || ''} required className="w-full bg-white/5 border border-brand-white/10 rounded-xl px-4 py-3 text-white" />
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-white/5 my-4" />
-
-                {/* Documents */}
-                <h3 className="text-sm font-medium text-white mb-4">Update Documents (Optional)</h3>
-                <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">Passport Photo</p>
-                      <p className="text-xs text-gray-500">Must be an image (jpg/png)</p>
-                    </div>
-                    <input type="file" name="passportPhoto" accept="image/*" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-white">Parent Consent Letter</p>
-                      <p className="text-xs text-gray-500">PDF Document</p>
-                    </div>
-                    <input type="file" name="consentLetter" accept=".pdf" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
-                  </div>
-
-                  {player.playerType === 'SCHOLARSHIP' && (
-                    <div className="p-4 rounded-xl bg-white/5 border border-brand-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-white">Club Release Letter</p>
-                        <p className="text-xs text-gray-500">PDF Document</p>
-                      </div>
-                      <input type="file" name="clubReleaseLetter" accept=".pdf" className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-6 border-t border-brand-white/10 flex justify-end gap-4">
-                  <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-3 rounded-full text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                    Cancel
-                  </button>
-                  <button type="submit" disabled={isSaving} className="px-8 py-3 rounded-full bg-brand-gold hover:bg-brand-gold text-black font-semibold transition-colors disabled:opacity-50 flex items-center gap-2">
-                    {isSaving ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                        Saving...
-                      </>
-                    ) : 'Save Changes'}
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {editProfileModal}
       {/* Inbox Modal */}
       {showInbox && (
         <div className="fixed inset-0 z-[200] flex justify-end bg-black/60 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]">
